@@ -180,25 +180,38 @@ body {
 .feature-icon { font-size: 22px; }
 .feature h3 { font-size: 14px; margin-bottom: 4px; }
 .feature p { font-size: 12px; color: var(--muted); line-height: 1.6; }
-.funny-card {
+.diagnosis-card {
   margin-top: 14px;
-  background: rgba(255,255,255,.06);
-  border: 1px solid rgba(255,255,255,.10);
-  border-radius: 12px;            /* v0.7.1 对齐客户端 ft-funny-card（var(--r-md)） */
-  padding: 16px 20px;             /* v0.7.1 对齐 sp-5 sp-6 节奏 */
+  background: rgba(255,255,255,.08);
+  border: 1px solid rgba(255,255,255,.12);
+  border-radius: 14px;
+  padding: 14px 16px;
+  backdrop-filter: blur(10px);
 }
-.funny-label {
-  font-size: 10px;
-  color: var(--muted);
-  letter-spacing: .08em;
-  text-transform: uppercase;
-  display: block;
+.diagnosis-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
   margin-bottom: 8px;
 }
-.funny-text {
+.diagnosis-label {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--ink);
+}
+.diagnosis-badge {
+  font-size: 10px;
+  color: var(--accent);
+  border: 1px solid rgba(255,138,92,.35);
+  background: rgba(255,138,92,.12);
+  padding: 3px 8px;
+  border-radius: 999px;
+}
+.diagnosis-text {
   font-size: 13px;
-  line-height: 1.75;
-  color: rgba(255,255,255,.78);
+  line-height: 1.8;
+  color: rgba(255,255,255,.82);
   margin: 0;
 }
 @media (max-width: 480px) {
