@@ -32,6 +32,8 @@ jobs:
         run: |
           mkdir -p _site
           cp docs/landing.html _site/index.html
+          # QR 链接指向 /FingerTip/landing.html，双路径部署保证两种 URL 都能打开
+          cp docs/landing.html _site/landing.html
           cp docs/algorithm-explainer.html _site/algorithm-explainer.html 2>/dev/null || true
           cp docs/plans/*.md _site/ 2>/dev/null || true
 
