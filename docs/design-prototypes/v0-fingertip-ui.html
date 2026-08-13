@@ -1,0 +1,880 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FingerTip UI v0 — 设计原型</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            /* Color — 暖灰私人日志调 */
+            --bg-base: #1A1814;
+            --bg-surface: #252220;
+            --bg-elevated: #2D2926;
+            --bg-overlay: rgba(26, 24, 20, 0.85);
+
+            --text-primary: #F0EBE0;
+            --text-secondary: #9C968D;
+            --text-tertiary: #6B655C;
+
+            --accent-warm: #E8956B;
+            --accent-cool: #7B9CC4;
+            --accent-grow: #9CB878;
+            --accent-fade: rgba(232, 149, 107, 0.15);
+
+            --border-subtle: rgba(240, 235, 224, 0.06);
+            --border-default: rgba(240, 235, 224, 0.1);
+
+            /* Spacing */
+            --sp-1: 4px; --sp-2: 8px; --sp-3: 12px; --sp-4: 16px;
+            --sp-6: 24px; --sp-8: 32px; --sp-12: 48px; --sp-16: 64px;
+
+            /* Radius */
+            --r-sm: 8px; --r-md: 12px; --r-lg: 16px; --r-xl: 24px;
+
+            /* Shadow */
+            --sh-1: 0 2px 8px rgba(0,0,0,0.15);
+            --sh-2: 0 4px 16px rgba(0,0,0,0.2);
+            --sh-3: 0 8px 24px rgba(0,0,0,0.25);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Plus Jakarta Sans', -apple-system, sans-serif;
+            background: var(--bg-base);
+            color: var(--text-primary);
+            line-height: 1.6;
+            font-size: 15px;
+            -webkit-font-smoothing: antialiased;
+            min-height: 100vh;
+        }
+        .mono { font-family: 'JetBrains Mono', monospace; }
+
+        /* ===== Layout Shell ===== */
+        .app-shell {
+            display: grid;
+            grid-template-columns: 220px 1fr;
+            min-height: 100vh;
+        }
+
+        /* Side nav — 极简留白 */
+        .side-nav {
+            background: var(--bg-surface);
+            border-right: 1px solid var(--border-subtle);
+            padding: var(--sp-8) var(--sp-4);
+            position: sticky;
+            top: 0;
+            height: 100vh;
+        }
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: var(--sp-3);
+            margin-bottom: var(--sp-12);
+            padding: 0 var(--sp-2);
+        }
+        .brand-mark {
+            width: 32px; height: 32px;
+            border-radius: var(--r-sm);
+            background: linear-gradient(135deg, var(--accent-warm), var(--accent-cool));
+            display: flex; align-items: center; justify-content: center;
+            font-weight: 700; font-size: 14px; color: var(--bg-base);
+        }
+        .brand-name {
+            font-weight: 600; font-size: 16px; letter-spacing: -0.01em;
+        }
+        .nav-list { list-style: none; }
+        .nav-item {
+            display: flex; align-items: center; gap: var(--sp-3);
+            padding: var(--sp-3) var(--sp-4);
+            border-radius: var(--r-sm);
+            color: var(--text-secondary);
+            cursor: pointer;
+            margin-bottom: var(--sp-1);
+            font-size: 14px;
+            font-weight: 500;
+            transition: background 200ms, color 200ms;
+        }
+        .nav-item:hover { background: var(--bg-elevated); color: var(--text-primary); }
+        .nav-item.active {
+            background: var(--accent-fade);
+            color: var(--accent-warm);
+        }
+        .nav-icon {
+            width: 18px; height: 18px; opacity: 0.7;
+        }
+        .nav-item.active .nav-icon { opacity: 1; }
+
+        /* Main content */
+        .main-content {
+            padding: var(--sp-12) var(--sp-12) var(--sp-12) var(--sp-12);
+            max-width: 1200px;
+        }
+        .page-header {
+            margin-bottom: var(--sp-12);
+        }
+        .page-eyebrow {
+            color: var(--text-tertiary);
+            font-size: 12px;
+            font-weight: 500;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            margin-bottom: var(--sp-2);
+        }
+        .page-title {
+            font-size: 36px;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            line-height: 1.2;
+            margin-bottom: var(--sp-2);
+        }
+        .page-subtitle {
+            color: var(--text-secondary);
+            font-size: 15px;
+        }
+
+        /* ===== Hero Card (Today 主题词) ===== */
+        .hero-card {
+            background: linear-gradient(135deg, var(--bg-elevated), var(--bg-surface));
+            border: 1px solid var(--border-default);
+            border-radius: var(--r-xl);
+            padding: var(--sp-12);
+            margin-bottom: var(--sp-8);
+            position: relative;
+            overflow: hidden;
+        }
+        .hero-card::before {
+            content: '';
+            position: absolute;
+            top: -50%; right: -10%;
+            width: 400px; height: 400px;
+            background: radial-gradient(circle, var(--accent-fade), transparent 60%);
+            pointer-events: none;
+        }
+        .hero-label {
+            color: var(--accent-warm);
+            font-size: 13px;
+            font-weight: 600;
+            letter-spacing: 0.05em;
+            margin-bottom: var(--sp-4);
+            display: flex; align-items: center; gap: var(--sp-2);
+        }
+        .theme-word {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 72px;
+            font-weight: 700;
+            letter-spacing: -0.04em;
+            color: var(--text-primary);
+            line-height: 1;
+            margin-bottom: var(--sp-3);
+        }
+        .theme-meta {
+            display: flex;
+            gap: var(--sp-8);
+            color: var(--text-secondary);
+            font-size: 13px;
+        }
+        .theme-meta-item {
+            display: flex; flex-direction: column; gap: var(--sp-1);
+        }
+        .theme-meta-value {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        /* ===== Stats Grid ===== */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: var(--sp-4);
+            margin-bottom: var(--sp-8);
+        }
+        .stat-card {
+            background: var(--bg-surface);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--r-md);
+            padding: var(--sp-6);
+        }
+        .stat-label {
+            color: var(--text-tertiary);
+            font-size: 12px;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            margin-bottom: var(--sp-3);
+        }
+        .stat-value {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 32px;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            line-height: 1;
+        }
+        .stat-delta {
+            margin-top: var(--sp-2);
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+        .stat-delta.up { color: var(--accent-grow); }
+        .stat-delta.down { color: var(--accent-warm); }
+
+        /* ===== Two-column layout ===== */
+        .two-col {
+            display: grid;
+            grid-template-columns: 1.5fr 1fr;
+            gap: var(--sp-6);
+            margin-bottom: var(--sp-8);
+        }
+        .panel {
+            background: var(--bg-surface);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--r-md);
+            padding: var(--sp-6);
+        }
+        .panel-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: var(--sp-6);
+        }
+        .panel-title {
+            font-size: 15px;
+            font-weight: 600;
+        }
+        .panel-meta {
+            font-size: 12px;
+            color: var(--text-tertiary);
+        }
+
+        /* Hourly heatmap — 24 小时节奏指纹 */
+        .hourly-grid {
+            display: grid;
+            grid-template-columns: repeat(24, 1fr);
+            gap: 3px;
+            margin-top: var(--sp-4);
+        }
+        .hour-cell {
+            aspect-ratio: 1;
+            background: var(--bg-elevated);
+            border-radius: 3px;
+            transition: transform 200ms;
+            cursor: pointer;
+            position: relative;
+        }
+        .hour-cell:hover {
+            transform: scaleY(1.15);
+            z-index: 2;
+        }
+        .hour-cell[data-level="1"] { background: rgba(232, 149, 107, 0.25); }
+        .hour-cell[data-level="2"] { background: rgba(232, 149, 107, 0.5); }
+        .hour-cell[data-level="3"] { background: rgba(232, 149, 107, 0.75); }
+        .hour-cell[data-level="4"] { background: var(--accent-warm); }
+
+        .hour-axis {
+            display: grid;
+            grid-template-columns: repeat(24, 1fr);
+            margin-top: var(--sp-2);
+            font-size: 10px;
+            color: var(--text-tertiary);
+            text-align: center;
+        }
+        .hour-axis span:nth-child(odd) { visibility: hidden; }
+
+        /* Top keys — 节奏指纹 */
+        .key-list { display: flex; flex-direction: column; gap: var(--sp-3); }
+        .key-row {
+            display: grid;
+            grid-template-columns: 40px 1fr 50px;
+            align-items: center;
+            gap: var(--sp-4);
+        }
+        .key-glyph {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--accent-warm);
+            text-align: center;
+            padding: var(--sp-2);
+            background: var(--bg-elevated);
+            border-radius: var(--r-sm);
+        }
+        .key-bar-track {
+            height: 8px;
+            background: var(--bg-elevated);
+            border-radius: 4px;
+            overflow: hidden;
+            position: relative;
+        }
+        .key-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent-warm), var(--accent-cool));
+            border-radius: 4px;
+            transition: width 1s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .key-percent {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 13px;
+            font-weight: 600;
+            text-align: right;
+            color: var(--text-secondary);
+        }
+
+        /* ===== SubmitMood — 情感化输入 ===== */
+        .mood-canvas {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            padding: var(--sp-16) var(--sp-8);
+            min-height: 60vh;
+            justify-content: center;
+        }
+        .mood-prompt {
+            font-size: 32px;
+            font-weight: 600;
+            letter-spacing: -0.02em;
+            margin-bottom: var(--sp-3);
+            color: var(--text-primary);
+        }
+        .mood-hint {
+            color: var(--text-secondary);
+            font-size: 15px;
+            margin-bottom: var(--sp-12);
+        }
+        .mood-input-wrap {
+            width: 100%;
+            max-width: 520px;
+            margin-bottom: var(--sp-8);
+        }
+        .mood-input {
+            width: 100%;
+            background: transparent;
+            border: none;
+            border-bottom: 2px solid var(--border-default);
+            padding: var(--sp-4) 0;
+            font-size: 48px;
+            font-weight: 600;
+            text-align: center;
+            color: var(--text-primary);
+            font-family: 'JetBrains Mono', monospace;
+            letter-spacing: -0.02em;
+            outline: none;
+            transition: border-color 200ms;
+        }
+        .mood-input:focus {
+            border-bottom-color: var(--accent-warm);
+        }
+        .mood-input::placeholder {
+            color: var(--text-tertiary);
+        }
+        .mood-chips {
+            display: flex;
+            gap: var(--sp-2);
+            flex-wrap: wrap;
+            justify-content: center;
+            margin-bottom: var(--sp-8);
+        }
+        .mood-chip {
+            padding: var(--sp-2) var(--sp-4);
+            background: var(--bg-surface);
+            border: 1px solid var(--border-subtle);
+            border-radius: 100px;
+            font-size: 13px;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all 200ms;
+        }
+        .mood-chip:hover {
+            border-color: var(--accent-warm);
+            color: var(--accent-warm);
+            background: var(--accent-fade);
+        }
+        .mood-style {
+            display: flex;
+            gap: var(--sp-2);
+            margin-bottom: var(--sp-12);
+        }
+        .style-chip {
+            padding: var(--sp-2) var(--sp-4);
+            background: transparent;
+            border: 1px solid var(--border-default);
+            border-radius: var(--r-sm);
+            font-size: 13px;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all 200ms;
+            font-family: inherit;
+        }
+        .style-chip.active {
+            background: var(--accent-fade);
+            border-color: var(--accent-warm);
+            color: var(--accent-warm);
+        }
+        .generate-btn {
+            padding: var(--sp-4) var(--sp-12);
+            background: var(--accent-warm);
+            color: var(--bg-base);
+            border: none;
+            border-radius: 100px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 200ms, box-shadow 200ms;
+            font-family: inherit;
+        }
+        .generate-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(232, 149, 107, 0.3);
+        }
+        .generate-btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* ===== History — 趋势可视化 ===== */
+        .history-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+            gap: var(--sp-4);
+            margin-top: var(--sp-8);
+        }
+        .day-card {
+            background: var(--bg-surface);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--r-md);
+            padding: var(--sp-4);
+            cursor: pointer;
+            transition: transform 200ms, border-color 200ms;
+        }
+        .day-card:hover {
+            transform: translateY(-2px);
+            border-color: var(--border-default);
+        }
+        .day-date {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            color: var(--text-tertiary);
+            margin-bottom: var(--sp-2);
+        }
+        .day-theme {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: var(--sp-3);
+            letter-spacing: -0.02em;
+        }
+        .day-mood {
+            font-size: 13px;
+            color: var(--text-secondary);
+            margin-bottom: var(--sp-3);
+        }
+        .day-mini-stats {
+            display: flex;
+            gap: var(--sp-3);
+            font-size: 11px;
+            color: var(--text-tertiary);
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        /* Stagger entrance */
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .stagger { animation: fadeUp 400ms cubic-bezier(0.16, 1, 0.3, 1) backwards; }
+        .stagger-1 { animation-delay: 50ms; }
+        .stagger-2 { animation-delay: 100ms; }
+        .stagger-3 { animation-delay: 150ms; }
+        .stagger-4 { animation-delay: 200ms; }
+
+        /* Page switching */
+        .page { display: none; }
+        .page.active { display: block; }
+
+        /* Tweaks */
+        .tweaks-panel {
+            position: fixed;
+            bottom: 24px; right: 24px;
+            background: var(--bg-elevated);
+            border: 1px solid var(--border-default);
+            border-radius: var(--r-md);
+            padding: var(--sp-3) var(--sp-4);
+            font-size: 12px;
+            color: var(--text-secondary);
+            box-shadow: var(--sh-3);
+            cursor: pointer;
+            z-index: 100;
+        }
+
+        .placeholder-tag {
+            display: inline-block;
+            padding: 2px 6px;
+            background: var(--bg-elevated);
+            border: 1px dashed var(--border-default);
+            border-radius: 4px;
+            font-size: 10px;
+            color: var(--text-tertiary);
+            font-family: 'JetBrains Mono', monospace;
+            margin-left: var(--sp-2);
+            vertical-align: middle;
+        }
+    </style>
+</head>
+<body>
+    <div class="app-shell">
+        <!-- Side nav -->
+        <aside class="side-nav">
+            <div class="brand">
+                <div class="brand-mark">F</div>
+                <div class="brand-name">FingerTip</div>
+            </div>
+            <ul class="nav-list">
+                <li class="nav-item active" data-page="today">
+                    <span>今日</span>
+                </li>
+                <li class="nav-item" data-page="submit">
+                    <span>心情</span>
+                </li>
+                <li class="nav-item" data-page="history">
+                    <span>历史</span>
+                </li>
+                <li class="nav-item" data-page="settings">
+                    <span>设置</span>
+                </li>
+                <li class="nav-item" data-page="about">
+                    <span>关于</span>
+                </li>
+            </ul>
+        </aside>
+
+        <!-- Today Page -->
+        <main class="main-content page active" id="page-today">
+            <div class="page-header stagger stagger-1">
+                <div class="page-eyebrow">2026 年 7 月 17 日</div>
+                <h1 class="page-title">今天的键盘指纹</h1>
+                <p class="page-subtitle">你昨天的输入节奏，被浓缩成下面这一张图。</p>
+            </div>
+
+            <!-- Hero theme word -->
+            <div class="hero-card stagger stagger-2">
+                <div class="hero-label">今日主题词</div>
+                <div class="theme-word">hello</div>
+                <div class="theme-meta">
+                    <div class="theme-meta-item">
+                        <span>总按键</span>
+                        <span class="theme-meta-value">4,217</span>
+                    </div>
+                    <div class="theme-meta-item">
+                        <span>心情</span>
+                        <span class="theme-meta-value">calm</span>
+                    </div>
+                    <div class="theme-meta-item">
+                        <span>高峰时段</span>
+                        <span class="theme-meta-value">14:00</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Stats grid -->
+            <div class="stats-grid stagger stagger-3">
+                <div class="stat-card">
+                    <div class="stat-label">敲击速度</div>
+                    <div class="stat-value">62<span style="font-size:14px;color:var(--text-tertiary);">/min</span></div>
+                    <div class="stat-delta up">↑ 比平时 +8%</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">停顿</div>
+                    <div class="stat-value">47</div>
+                    <div class="stat-delta">每 12 分钟一次</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">删除/修改</div>
+                    <div class="stat-value">8.2<span style="font-size:14px;color:var(--text-tertiary);">%</span></div>
+                    <div class="stat-delta down">略高于均值</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">活跃时段</div>
+                    <div class="stat-value">9.4<span style="font-size:14px;color:var(--text-tertiary);">h</span></div>
+                    <div class="stat-delta">8:00 - 18:30</div>
+                </div>
+            </div>
+
+            <!-- Two column visualizations -->
+            <div class="two-col stagger stagger-4">
+                <div class="panel">
+                    <div class="panel-header">
+                        <div class="panel-title">一天的节奏地图</div>
+                        <div class="panel-meta">24h · 每格 = 1h</div>
+                    </div>
+                    <div class="hourly-grid">
+                        <div class="hour-cell" data-level="1" title="0:00"></div>
+                        <div class="hour-cell" data-level="1" title="1:00"></div>
+                        <div class="hour-cell" data-level="1" title="2:00"></div>
+                        <div class="hour-cell" data-level="1" title="3:00"></div>
+                        <div class="hour-cell" data-level="1" title="4:00"></div>
+                        <div class="hour-cell" data-level="1" title="5:00"></div>
+                        <div class="hour-cell" data-level="1" title="6:00"></div>
+                        <div class="hour-cell" data-level="1" title="7:00"></div>
+                        <div class="hour-cell" data-level="2" title="8:00"></div>
+                        <div class="hour-cell" data-level="3" title="9:00"></div>
+                        <div class="hour-cell" data-level="3" title="10:00"></div>
+                        <div class="hour-cell" data-level="2" title="11:00"></div>
+                        <div class="hour-cell" data-level="2" title="12:00"></div>
+                        <div class="hour-cell" data-level="3" title="13:00"></div>
+                        <div class="hour-cell" data-level="4" title="14:00"></div>
+                        <div class="hour-cell" data-level="4" title="15:00"></div>
+                        <div class="hour-cell" data-level="3" title="16:00"></div>
+                        <div class="hour-cell" data-level="3" title="17:00"></div>
+                        <div class="hour-cell" data-level="2" title="18:00"></div>
+                        <div class="hour-cell" data-level="2" title="19:00"></div>
+                        <div class="hour-cell" data-level="1" title="20:00"></div>
+                        <div class="hour-cell" data-level="1" title="21:00"></div>
+                        <div class="hour-cell" data-level="1" title="22:00"></div>
+                        <div class="hour-cell" data-level="1" title="23:00"></div>
+                    </div>
+                    <div class="hour-axis">
+                        <span>0</span><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span>
+                        <span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span>
+                        <span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span>
+                        <span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span>
+                    </div>
+                </div>
+
+                <div class="panel">
+                    <div class="panel-header">
+                        <div class="panel-title">节奏指纹</div>
+                        <div class="panel-meta">Top 5 按键</div>
+                    </div>
+                    <div class="key-list">
+                        <div class="key-row">
+                            <div class="key-glyph">e</div>
+                            <div class="key-bar-track">
+                                <div class="key-bar-fill" style="width: 18.4%"></div>
+                            </div>
+                            <div class="key-percent">18.4%</div>
+                        </div>
+                        <div class="key-row">
+                            <div class="key-glyph">t</div>
+                            <div class="key-bar-track">
+                                <div class="key-bar-fill" style="width: 14.2%"></div>
+                            </div>
+                            <div class="key-percent">14.2%</div>
+                        </div>
+                        <div class="key-row">
+                            <div class="key-glyph">a</div>
+                            <div class="key-bar-track">
+                                <div class="key-bar-fill" style="width: 12.1%"></div>
+                            </div>
+                            <div class="key-percent">12.1%</div>
+                        </div>
+                        <div class="key-row">
+                            <div class="key-glyph">o</div>
+                            <div class="key-bar-track">
+                                <div class="key-bar-fill" style="width: 10.8%"></div>
+                            </div>
+                            <div class="key-percent">10.8%</div>
+                        </div>
+                        <div class="key-row">
+                            <div class="key-glyph">i</div>
+                            <div class="key-bar-track">
+                                <div class="key-bar-fill" style="width: 8.6%"></div>
+                            </div>
+                            <div class="key-percent">8.6%</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- AI 生成产物 -->
+            <div class="two-col stagger stagger-4">
+                <div class="panel" style="aspect-ratio: 16/9; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: var(--sp-3);">
+                    <div style="font-size: 13px; color: var(--text-tertiary);">今日画作</div>
+                    <div class="theme-word" style="font-size: 48px; opacity: 0.4;">[抽象表现主义]</div>
+                    <div class="placeholder-tag">image</div>
+                </div>
+                <div class="panel" style="display: flex; align-items: center; justify-content: center; flex-direction: column; gap: var(--sp-3);">
+                    <div style="font-size: 13px; color: var(--text-tertiary);">今日音乐</div>
+                    <div style="font-size: 14px; color: var(--accent-warm);">▢ play</div>
+                    <div class="placeholder-tag">audio</div>
+                </div>
+            </div>
+        </main>
+
+        <!-- SubmitMood Page -->
+        <main class="main-content page" id="page-submit">
+            <div class="mood-canvas">
+                <div class="page-eyebrow">提交心情</div>
+                <h2 class="mood-prompt">用一个词描述今天</h2>
+                <p class="mood-hint">它会成为今日 AI 音乐与画作的情绪种子</p>
+
+                <div class="mood-input-wrap">
+                    <input
+                        type="text"
+                        class="mood-input"
+                        placeholder="calm"
+                        value="focused"
+                        maxlength="20"
+                    >
+                </div>
+
+                <div class="mood-chips">
+                    <div class="mood-chip">focused</div>
+                    <div class="mood-chip">tired</div>
+                    <div class="mood-chip">excited</div>
+                    <div class="mood-chip">calm</div>
+                    <div class="mood-chip">anxious</div>
+                    <div class="mood-chip">grateful</div>
+                    <div class="mood-chip">curious</div>
+                </div>
+
+                <div class="mood-style">
+                    <button class="style-chip active">Ambient</button>
+                    <button class="style-chip">Jazz</button>
+                    <button class="style-chip">Cinematic</button>
+                    <button class="style-chip">Lo-fi</button>
+                </div>
+
+                <button class="generate-btn">生成今日作品</button>
+            </div>
+        </main>
+
+        <!-- History Page -->
+        <main class="main-content page" id="page-history">
+            <div class="page-header">
+                <div class="page-eyebrow">过去 7 天</div>
+                <h1 class="page-title">你的节奏档案</h1>
+                <p class="page-subtitle">每一天都被一个词、一段音乐、一幅画珍藏。</p>
+            </div>
+
+            <div class="history-grid">
+                <div class="day-card">
+                    <div class="day-date">07-16 周三</div>
+                    <div class="day-theme">hello</div>
+                    <div class="day-mood">focused</div>
+                    <div class="day-mini-stats">
+                        <span>4,217 keys</span>
+                        <span>·</span>
+                        <span>14:00 peak</span>
+                    </div>
+                </div>
+                <div class="day-card">
+                    <div class="day-date">07-15 周二</div>
+                    <div class="day-theme">world</div>
+                    <div class="day-mood">tired</div>
+                    <div class="day-mini-stats">
+                        <span>2,891 keys</span>
+                        <span>·</span>
+                        <span>10:00 peak</span>
+                    </div>
+                </div>
+                <div class="day-card">
+                    <div class="day-date">07-14 周一</div>
+                    <div class="day-theme">think</div>
+                    <div class="day-mood">curious</div>
+                    <div class="day-mini-stats">
+                        <span>5,103 keys</span>
+                        <span>·</span>
+                        <span>15:30 peak</span>
+                    </div>
+                </div>
+                <div class="day-card">
+                    <div class="day-date">07-13 周日</div>
+                    <div class="day-theme">rest</div>
+                    <div class="day-mood">grateful</div>
+                    <div class="day-mini-stats">
+                        <span>1,247 keys</span>
+                        <span>·</span>
+                        <span>11:00 peak</span>
+                    </div>
+                </div>
+                <div class="day-card">
+                    <div class="day-date">07-12 周六</div>
+                    <div class="day-theme">play</div>
+                    <div class="day-mood">excited</div>
+                    <div class="day-mini-stats">
+                        <span>3,560 keys</span>
+                        <span>·</span>
+                        <span>20:00 peak</span>
+                    </div>
+                </div>
+                <div class="day-card">
+                    <div class="day-date">07-11 周五</div>
+                    <div class="day-theme">flow</div>
+                    <div class="day-mood">focused</div>
+                    <div class="day-mini-stats">
+                        <span>4,802 keys</span>
+                        <span>·</span>
+                        <span>16:00 peak</span>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Settings Page -->
+        <main class="main-content page" id="page-settings">
+            <div class="page-header">
+                <div class="page-eyebrow">设置</div>
+                <h1 class="page-title">偏好</h1>
+            </div>
+            <div class="panel">
+                <p style="color:var(--text-secondary);">[设置占位 — 与原 Naive UI 一致]</p>
+            </div>
+        </main>
+
+        <!-- About Page -->
+        <main class="main-content page" id="page-about">
+            <div class="page-header">
+                <div class="page-eyebrow">关于</div>
+                <h1 class="page-title">FingerTip v0.1.0</h1>
+                <p class="page-subtitle">后台记录键盘行为，次日产出 AI 音乐与数字画作。隐私优先。</p>
+            </div>
+        </main>
+    </div>
+
+    <!-- Tweaks panel -->
+    <div class="tweaks-panel" id="tweaks">
+        🎨 v0 设计原型 — 点击侧栏切换页面
+    </div>
+
+    <script>
+        // Page switching
+        document.querySelectorAll('.nav-item').forEach(item => {
+            item.addEventListener('click', () => {
+                const targetPage = item.dataset.page;
+                document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+                item.classList.add('active');
+                document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+                document.getElementById('page-' + targetPage).classList.add('active');
+                // Re-trigger stagger animation
+                document.querySelectorAll('#page-' + targetPage + ' .stagger').forEach((el, i) => {
+                    el.style.animation = 'none';
+                    setTimeout(() => {
+                        el.style.animation = `fadeUp 400ms cubic-bezier(0.16, 1, 0.3, 1) ${50 * (i + 1)}ms backwards`;
+                    }, 10);
+                });
+            });
+        });
+
+        // Mood chip selection
+        document.querySelectorAll('.mood-chip').forEach(chip => {
+            chip.addEventListener('click', () => {
+                document.querySelector('.mood-input').value = chip.textContent;
+            });
+        });
+
+        // Style chip selection
+        document.querySelectorAll('.style-chip').forEach(chip => {
+            chip.addEventListener('click', () => {
+                document.querySelectorAll('.style-chip').forEach(c => c.classList.remove('active'));
+                chip.classList.add('active');
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,618 @@
+/* FingerTip 设计系统 — 浅色版（v0 Light）
+ * 验证意图：单一来源 tokens，全局可用；Naive UI 主题覆盖其上
+ */
+
+:root {
+  /* —— Color —— 暖白私人日志调 */
+  --bg-base: #FAF8F4;
+  --bg-surface: #FFFFFF;
+  --bg-elevated: #F4F1EB;
+  --bg-overlay: rgba(250, 248, 244, 0.92);
+
+  --text-primary: #2A2823;
+  --text-secondary: #6B655C;
+  --text-tertiary: #A39C92;
+
+  --accent-warm: #D67B4F;
+  --accent-warm-soft: rgba(214, 123, 79, 0.12);
+  --accent-cool: #5C7BA5;
+  --accent-grow: #7A9A5C;
+
+  --border-subtle: rgba(42, 40, 35, 0.06);
+  --border-default: rgba(42, 40, 35, 0.1);
+  --border-strong: rgba(42, 40, 35, 0.16);
+
+  --shadow-1: 0 1px 3px rgba(42, 40, 35, 0.04), 0 1px 2px rgba(42, 40, 35, 0.06);
+  --shadow-2: 0 4px 12px rgba(42, 40, 35, 0.06), 0 2px 4px rgba(42, 40, 35, 0.04);
+  --shadow-3: 0 8px 24px rgba(42, 40, 35, 0.08), 0 4px 8px rgba(42, 40, 35, 0.04);
+
+  /* —— Spacing 4px base —— */
+  --sp-1: 4px; --sp-2: 8px; --sp-3: 12px; --sp-4: 16px;
+  --sp-6: 24px; --sp-8: 32px; --sp-12: 48px; --sp-16: 64px;
+
+  /* —— Radius —— */
+  --r-sm: 8px; --r-md: 12px; --r-lg: 16px; --r-xl: 24px;
+
+  /* —— Typography —— */
+  --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  --font-mono: 'JetBrains Mono', 'SF Mono', Consolas, monospace;
+  --font-hand: 'Caveat', cursive;
+}
+
+/* —— Global reset + base —— */
+html, body, #app {
+  margin: 0; padding: 0;
+  background: var(--bg-base);
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  font-size: 15px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* —— Naive UI 主题覆盖（浅色版） —— */
+.n-card {
+  background: var(--bg-surface) !important;
+  border: 1px solid var(--border-subtle) !important;
+  box-shadow: var(--shadow-1) !important;
+  border-radius: var(--r-md) !important;
+}
+.n-card__content { padding: var(--sp-6) !important; }
+
+/* —— 通用卡片 hover —— */
+.ft-panel {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--r-md);
+  padding: var(--sp-6);
+  box-shadow: var(--shadow-1);
+  transition: transform 200ms ease, box-shadow 200ms ease;
+}
+.ft-panel:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-2);
+}
+
+/* —— Hero card（主题词大卡） —— */
+.ft-hero {
+  background: linear-gradient(135deg, var(--bg-surface), #FFFDF9);
+  border: 1px solid var(--border-default);
+  border-radius: var(--r-xl);
+  padding: var(--sp-8) var(--sp-12);
+  margin-bottom: var(--sp-16);
+  position: relative;
+  overflow: hidden;
+  box-shadow: var(--shadow-1);
+}
+.ft-hero::before {
+  content: '';
+  position: absolute;
+  top: -40%; right: -10%;
+  width: 360px; height: 360px;
+  background: radial-gradient(circle, var(--accent-warm-soft), transparent 65%);
+  pointer-events: none;
+}
+.ft-hero-label {
+  color: var(--accent-warm);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  margin-bottom: var(--sp-4);
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+}
+.ft-hero-label::before {
+  content: '';
+  width: 24px; height: 1px;
+  background: var(--accent-warm);
+}
+.ft-theme-word {
+  font-family: var(--font-hand);
+  font-size: 96px;
+  font-weight: 700;
+  color: var(--text-primary);
+  line-height: 1;
+  margin-bottom: var(--sp-6);
+  letter-spacing: -0.02em;
+}
+.ft-theme-meta {
+  display: flex;
+  gap: var(--sp-12);
+  color: var(--text-secondary);
+  font-size: 13px;
+  position: relative;
+}
+.ft-theme-meta-item { display: flex; flex-direction: column; gap: var(--sp-1); }
+.ft-theme-meta-value {
+  font-family: var(--font-mono);
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+/* —— 隐私徽章 —— */
+.ft-privacy-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  padding: var(--sp-2) var(--sp-4);
+  background: var(--bg-surface);
+  border: 1px solid var(--accent-grow);
+  border-radius: 100px;
+  font-size: 12px;
+  color: var(--text-primary);
+  font-weight: 500;
+  box-shadow: var(--shadow-1);
+}
+.ft-privacy-badge::before {
+  content: '';
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--accent-grow);
+  box-shadow: 0 0 0 3px rgba(122, 154, 92, 0.18);
+}
+
+/* —— 统计卡 —— */
+.ft-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--sp-6);
+  margin-bottom: var(--sp-12);
+}
+.ft-stat-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--r-md);
+  padding: var(--sp-5);
+  position: relative;
+  overflow: hidden;
+  transition: transform 200ms, box-shadow 200ms;
+}
+.ft-stat-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-2);
+}
+.ft-stat-label {
+  color: var(--text-tertiary);
+  font-size: 12px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: var(--sp-3);
+}
+.ft-stat-value {
+  font-family: var(--font-mono);
+  font-size: 32px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1;
+  color: var(--text-primary);
+}
+.ft-stat-delta {
+  margin-top: var(--sp-2);
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+.ft-stat-delta.up { color: var(--accent-grow); }
+.ft-stat-delta.down { color: var(--accent-warm); }
+.ft-stat-spark {
+  position: absolute;
+  bottom: var(--sp-4);
+  right: var(--sp-4);
+  width: 60px;
+  height: 20px;
+  opacity: 0.5;
+}
+
+/* —— 两栏布局 —— */
+.ft-two-col {
+  display: grid;
+  grid-template-columns: 1.5fr 1fr;
+  gap: var(--sp-8);
+  margin-bottom: var(--sp-12);
+}
+
+/* —— 24h 时段热力图 —— */
+.ft-hourly-grid {
+  display: grid;
+  grid-template-columns: repeat(24, 1fr);
+  gap: 3px;
+  margin-top: var(--sp-4);
+}
+.ft-hour-cell {
+  aspect-ratio: 1;
+  background: var(--bg-elevated);
+  border-radius: 3px;
+  transition: transform 200ms;
+  cursor: pointer;
+}
+.ft-hour-cell:hover {
+  transform: scaleY(1.15);
+  z-index: 2;
+}
+.ft-hour-cell[data-level="1"] { background: rgba(214, 123, 79, 0.18); }
+.ft-hour-cell[data-level="2"] { background: rgba(214, 123, 79, 0.4); }
+.ft-hour-cell[data-level="3"] { background: rgba(214, 123, 79, 0.7); }
+.ft-hour-cell[data-level="4"] { background: var(--accent-warm); }
+
+.ft-hour-axis {
+  display: grid;
+  grid-template-columns: repeat(24, 1fr);
+  margin-top: var(--sp-2);
+  font-size: 10px;
+  color: var(--text-tertiary);
+  text-align: center;
+  font-family: var(--font-mono);
+}
+.ft-hour-axis span:nth-child(odd) { visibility: hidden; }
+
+.ft-heatmap-legend {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  margin-top: var(--sp-4);
+  font-size: 11px;
+  color: var(--text-tertiary);
+}
+.ft-legend-cells { display: flex; gap: 2px; }
+.ft-legend-cell {
+  width: 14px; height: 14px;
+  border-radius: 2px;
+}
+
+/* —— Top 5 节奏指纹 —— */
+.ft-key-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+}
+.ft-key-row {
+  display: grid;
+  grid-template-columns: 40px 1fr 50px;
+  align-items: center;
+  gap: var(--sp-4);
+}
+.ft-key-glyph {
+  font-family: var(--font-mono);
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--accent-warm);
+  text-align: center;
+  padding: var(--sp-2);
+  background: var(--bg-elevated);
+  border-radius: var(--r-sm);
+}
+.ft-key-bar-track {
+  height: 8px;
+  background: var(--bg-elevated);
+  border-radius: 4px;
+  overflow: hidden;
+}
+.ft-key-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent-warm), #B87547);
+  border-radius: 4px;
+  transition: width 1s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.ft-key-percent {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 600;
+  text-align: right;
+  color: var(--text-secondary);
+}
+
+/* —— 面板标题/元信息 —— */
+.ft-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--sp-6);
+}
+.ft-panel-title { font-size: 15px; font-weight: 600; }
+.ft-panel-meta { font-size: 12px; color: var(--text-tertiary); }
+
+/* —— 页面 header —— */
+.ft-page-header {
+  margin-bottom: var(--sp-16);
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: var(--sp-4);
+}
+.ft-page-header-text { flex: 1; }
+.ft-page-eyebrow {
+  color: var(--text-tertiary);
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-bottom: var(--sp-2);
+}
+.ft-page-title {
+  font-size: 36px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+  margin-bottom: var(--sp-2);
+}
+.ft-page-subtitle {
+  color: var(--text-secondary);
+  font-size: 15px;
+}
+
+/* —— AI 产物卡 —— */
+.ft-ai-art {
+  aspect-ratio: 16/9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: var(--sp-3);
+  background: linear-gradient(135deg, #FFFDF9, var(--bg-surface)) !important;
+  border: 1px solid var(--border-default) !important;
+}
+.ft-ai-art-label, .ft-ai-music-label {
+  font-size: 13px;
+  color: var(--text-tertiary);
+}
+.ft-ai-art-title {
+  font-family: var(--font-hand);
+  font-size: 56px;
+  font-weight: 700;
+  color: var(--accent-warm);
+  opacity: 0.7;
+}
+.ft-ai-music-title {
+  font-family: var(--font-hand);
+  font-size: 56px;
+  font-weight: 700;
+  color: var(--accent-warm);
+}
+
+/* —— SubmitMood —— */
+.ft-mood-canvas {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: var(--sp-16) var(--sp-8);
+  min-height: 60vh;
+  justify-content: center;
+  max-width: 560px;
+  margin: 0 auto;
+}
+.ft-mood-prompt {
+  font-family: var(--font-hand);
+  font-size: 56px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  margin-bottom: var(--sp-3);
+  color: var(--text-primary);
+  line-height: 1.1;
+}
+.ft-mood-hint {
+  color: var(--text-secondary);
+  font-size: 15px;
+  margin-bottom: var(--sp-12);
+}
+.ft-mood-input {
+  width: 100%;
+  max-width: 520px;
+  background: transparent;
+  border: none;
+  border-bottom: 2px dashed var(--border-strong);
+  padding: var(--sp-4) 0;
+  font-size: 48px;
+  font-weight: 600;
+  text-align: center;
+  color: var(--accent-warm);
+  font-family: var(--font-hand);
+  letter-spacing: -0.01em;
+  outline: none;
+  transition: border-color 200ms;
+  margin-bottom: var(--sp-8);
+}
+.ft-mood-input:focus { border-bottom-color: var(--accent-warm); border-bottom-style: solid; }
+.ft-mood-input::placeholder { color: var(--text-tertiary); font-family: var(--font-hand); }
+.ft-mood-chips {
+  display: flex;
+  gap: var(--sp-2);
+  flex-wrap: wrap;
+  justify-content: center;
+  margin-bottom: var(--sp-8);
+  max-width: 520px;
+}
+.ft-mood-chip {
+  padding: var(--sp-2) var(--sp-4);
+  background: var(--bg-surface);
+  border: 1px solid var(--border-default);
+  border-radius: 100px;
+  font-size: 13px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 200ms;
+}
+.ft-mood-chip:hover {
+  border-color: var(--accent-warm);
+  color: var(--accent-warm);
+  background: var(--accent-warm-soft);
+}
+.ft-mood-style {
+  display: flex;
+  gap: var(--sp-2);
+  margin-bottom: var(--sp-12);
+  max-width: 520px;
+  justify-content: center;
+}
+.ft-style-chip {
+  padding: var(--sp-2) var(--sp-4);
+  background: transparent;
+  border: 1px solid var(--border-default);
+  border-radius: var(--r-sm);
+  font-size: 13px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 200ms;
+  font-family: inherit;
+}
+.ft-style-chip.active {
+  background: var(--accent-warm-soft);
+  border-color: var(--accent-warm);
+  color: var(--accent-warm);
+}
+.ft-generate-btn {
+  padding: var(--sp-3) var(--sp-8);
+  background: var(--text-primary);
+  color: var(--bg-base);
+  border: none;
+  border-radius: 100px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 200ms, box-shadow 200ms;
+  font-family: inherit;
+  box-shadow: var(--shadow-2);
+  letter-spacing: 0.01em;
+}
+.ft-generate-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-3);
+}
+.ft-generate-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* —— History day cards —— */
+.ft-history-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: var(--sp-4);
+  margin-top: var(--sp-8);
+}
+.ft-day-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--r-md);
+  padding: var(--sp-4);
+  cursor: pointer;
+  transition: transform 200ms, box-shadow 200ms;
+}
+.ft-day-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-2);
+}
+.ft-day-date {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-tertiary);
+  margin-bottom: var(--sp-2);
+}
+.ft-day-theme {
+  font-family: var(--font-hand);
+  font-size: 42px;
+  font-weight: 700;
+  color: var(--accent-warm);
+  margin-bottom: var(--sp-3);
+  line-height: 1;
+}
+.ft-day-mood {
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+/* —— Entrance animations —— */
+@keyframes ftFadeUp {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.ft-stagger { animation: ftFadeUp 400ms cubic-bezier(0.16, 1, 0.3, 1) backwards; }
+.ft-stagger-1 { animation-delay: 50ms; }
+.ft-stagger-2 { animation-delay: 100ms; }
+.ft-stagger-3 { animation-delay: 150ms; }
+.ft-stagger-4 { animation-delay: 200ms; }
+.ft-stagger-5 { animation-delay: 250ms; }
+
+/* —— Naive UI 主按钮主题覆盖 —— */
+.n-button:not(.n-button--text-type):not(.n-button--ghost-type) {
+  font-weight: 500;
+}
+
+/* —— 导航栏覆盖 —— */
+.nav-bar { margin-bottom: var(--sp-6); }
+.content { flex: 1; }
+
+/* ===================================================================
+ * 紧凑布局：窗口窄于 1100px 时启用
+ * 验证意图：Tauri 窗口默认 1100x760，最小 960x640
+ * 当窗口小于 1100px 时，触发桌面应用紧凑模式：
+ * - hero 主题词缩小、padding 收紧
+ * - stats grid 从 4 列降到 2 列
+ * - two-col 缩为单列堆叠
+ * 让窗口在 960-1100 宽度区间内仍可舒适阅读
+ * ==================================================================== */
+@media (max-width: 1100px) {
+  .main-content {
+    padding: var(--sp-8);
+    max-width: 100%;
+  }
+
+  /* Hero 收紧 — 减小垂直 padding 但保持充足的下边距 */
+  .ft-hero {
+    padding: var(--sp-6) var(--sp-8);
+    margin-bottom: var(--sp-12);
+  }
+  .ft-hero::before {
+    width: 240px; height: 240px;
+  }
+  .ft-theme-word {
+    font-size: 72px;
+    margin-bottom: var(--sp-4);
+  }
+  .ft-theme-meta {
+    gap: var(--sp-8);
+  }
+
+  /* Stats grid: 4 列 → 2 列 × 2 行，卡间距加大 */
+  .ft-stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--sp-4);
+    margin-bottom: var(--sp-10);
+  }
+  .ft-stat-card { padding: var(--sp-4); }
+  .ft-stat-value { font-size: 28px; }
+
+  /* Two col → 单列堆叠，但保留较大 gap */
+  .ft-two-col {
+    grid-template-columns: 1fr;
+    gap: var(--sp-6);
+    margin-bottom: var(--sp-10);
+  }
+
+  /* 热力图 cells 略缩小 */
+  .ft-hour-cell { aspect-ratio: 1; }
+
+  /* Page header 紧凑 */
+  .ft-page-header {
+    margin-bottom: var(--sp-12);
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .ft-page-title { font-size: 32px; }
+
+  /* AI 产物卡 */
+  .ft-ai-art { padding: var(--sp-8) !important; }
+  .ft-ai-art-title, .ft-ai-music-title { font-size: 48px; }
+}
+
+/* 超窄窗口（< 720px）：stats 单列，hero 更紧凑 */
+@media (max-width: 720px) {
+  .ft-stats-grid {
+    grid-template-columns: 1fr;
+    gap: var(--sp-3);
+  }
+  .ft-theme-word { font-size: 56px; }
+  .ft-page-title { font-size: 26px; }
+}

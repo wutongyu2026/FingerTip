@@ -1,0 +1,51 @@
+{
+  "$schema": "https://schema.tauri.app/config/2.0.0",
+  "productName": "FingerTip",
+  "version": "0.7.1",
+  "identifier": "com.fingertip.app",
+  "build": {
+    "beforeDevCommand": "pnpm dev",
+    "devUrl": "http://localhost:1420",
+    "beforeBuildCommand": "pnpm build",
+    "frontendDist": "../dist"
+  },
+  "app": {
+    "windows": [
+      {
+        "title": "FingerTip",
+        "width": 1100,
+        "height": 760,
+        "minWidth": 1024,
+        "minHeight": 680,
+        "resizable": true,
+        "fullscreen": false,
+        "center": true,
+        "decorations": true,
+        "transparent": false,
+        "visible": false
+      }
+    ],
+    "security": {
+      "csp": null,
+      "assetProtocol": {
+        "enable": true,
+        "scope": ["**"]
+      }
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": ["msi", "nsis"],
+    "publisher": "FingerTip Dev",
+    "category": "Utility",
+    "shortDescription": "记录键盘敲击，次日产出 AI 音乐与数字画作",
+    "longDescription": "FingerTip 是一个后台运行的桌面应用，记录你每天的键盘敲击行为，并在次日生成 AI 音乐与数字画作，让你以娱乐方式看见自己的输入节奏。纯本地存储，隐私优先。",
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.icns",
+      "icons/icon.ico"
+    ]
+  }
+}

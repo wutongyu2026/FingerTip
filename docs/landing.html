@@ -135,6 +135,20 @@ body {
   border-radius: 18px;
   font-size: 15px;
 }
+/* v0.6.0: 双按钮容器（GitHub + 国内镜像） */
+.cta-row {
+  display: flex;
+  gap: 10px;
+  margin-top: 18px;
+  flex-wrap: wrap;
+}
+.cta-row--single .cta { flex: 1; }
+/* 国内镜像按钮 — 灰底橙字，区别于 GitHub 主按钮（白底） */
+.cta-cn {
+  background: rgba(255,255,255,.10);
+  color: var(--accent);
+  border: 1px solid rgba(255,138,92,.35);
+}
 .note {
   margin-top: 14px;
   font-size: 11px;
@@ -166,6 +180,27 @@ body {
 .feature-icon { font-size: 22px; }
 .feature h3 { font-size: 14px; margin-bottom: 4px; }
 .feature p { font-size: 12px; color: var(--muted); line-height: 1.6; }
+.funny-card {
+  margin-top: 14px;
+  background: rgba(255,255,255,.06);
+  border: 1px solid rgba(255,255,255,.10);
+  border-radius: 12px;            /* v0.7.1 对齐客户端 ft-funny-card（var(--r-md)） */
+  padding: 16px 20px;             /* v0.7.1 对齐 sp-5 sp-6 节奏 */
+}
+.funny-label {
+  font-size: 10px;
+  color: var(--muted);
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  display: block;
+  margin-bottom: 8px;
+}
+.funny-text {
+  font-size: 13px;
+  line-height: 1.75;
+  color: rgba(255,255,255,.78);
+  margin: 0;
+}
 @media (max-width: 480px) {
   .wrap { padding: 10px 10px 32px; }
   .hero { border-radius: 22px; }
@@ -207,13 +242,49 @@ function fmtN(n) {
   return String(n);
 }
 function setDownloadLinks() {
+  // v0.6.0: 双按钮下载 —— d.l = GitHub 直链，d.c = 国内镜像
+  // 兼容旧 payload（无 l/c）：用 hostname 拼 GitHub URL fallback
   const host = location.hostname || '';
   const org = host.split('.')[0] || 'wutongyu2026';
   const pathMatch = location.pathname.match(/^\/([^/]+)/);
   const firstPath = pathMatch && pathMatch[1] && !pathMatch[1].includes(':') ? pathMatch[1] : 'FingerTip';
   const repo = firstPath || 'FingerTip';
-  const url = 'https://github.com/' + org + '/' + repo + '/releases/latest';
-  document.querySelectorAll('a.cta').forEach(a => { a.href = url; });
+  const ghUrl = 'https://github.com/' + org + '/' + repo + '/releases/latest';
+
+  // 把每一个独立 .cta 替换为 .cta-row 容器（内含 GitHub + 可选国内镜像按钮）
+  // querySelectorAll 而非 querySelector：覆盖有 payload / 无 payload 两种静态页
+  document.querySelectorAll('.cta').forEach((el) => {
+    // 已经被包过的容器跳过（防重复包装）
+    if (el.classList.contains('cta-github') || el.classList.contains('cta-cn')) return;
+    if (el.parentElement && el.parentElement.classList.contains('cta-row')) return;
+    const wrap = document.createElement('div');
+    wrap.className = 'cta-row';
+    el.replaceWith(wrap);
+    wrap.appendChild(buildCtaGithub(d && d.l ? d.l : ghUrl));
+    if (d && d.c) wrap.appendChild(buildCtaCn(d.c));
+    // 若只有 GitHub 链接，保持单按钮（向后兼容）
+    if (!d || !d.c) wrap.classList.add('cta-row--single');
+  });
+}
+
+function buildCtaGithub(href) {
+  const a = document.createElement('a');
+  a.className = 'cta cta-github';
+  a.href = href;
+  a.target = '_blank';
+  a.rel = 'noopener';
+  a.textContent = 'GitHub 下载 · 桌面版';
+  return a;
+}
+
+function buildCtaCn(href) {
+  const a = document.createElement('a');
+  a.className = 'cta cta-cn';
+  a.href = href;
+  a.target = '_blank';
+  a.rel = 'noopener';
+  a.textContent = '国内镜像下载';
+  return a;
 }
 
 const d = getPayload();
@@ -249,6 +320,7 @@ if (d && d.p && d.w) {
       <div class="stat"><span>总按键</span><b>${fmtN(d.n)}</b></div>
       <div class="stat"><span>活跃</span><b>${actText}</b></div>
     </div>
+    ${d.u ? `<div class="funny-card"><span class="funny-label">AI 键盘诊断</span><p class="funny-text">${esc(d.u)}</p></div>` : ''}
     <div class="player">
       <button class="play-btn" id="playBtn" aria-label="播放今日音乐">▶</button>
       <div class="player-info">

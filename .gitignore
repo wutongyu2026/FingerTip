@@ -1,0 +1,51 @@
+# Rust / Tauri
+src-tauri/target*/
+src-tauri/Cargo.lock
+src-tauri/gen/
+
+# Node / Vue / Vite
+node_modules/
+dist/
+.vite/
+*.local
+
+# 编辑器与系统
+.idea/
+.vscode/
+*.swp
+.DS_Store
+Thumbs.db
+
+# 日志与本地产物
+*.log
+
+# 环境与密钥（绝不入仓）
+.env
+.env.*
+!.env.example
+secrets/
+
+# 用户私有数据目录（运行期生成）
+data/
+outputs/
+logs/
+
+# SQLite 数据库（首版持久化在 src-tauri/ 下）
+src-tauri/*.db
+src-tauri/*.db-journal
+*.db
+*.db-wal
+*.db-shm
+
+# UI 截图与 Playwright MCP 调试产物
+.playwright-mcp/
+*.png
+!icons/*.png
+
+# 测试产物
+.pytest_cache/
+test-results/
+# Claude worktrees (out-of-source worktree dirs)
+.claude/
+test-poster-preview.jpg
+test-tiny.jpg

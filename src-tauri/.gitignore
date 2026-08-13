@@ -1,0 +1,5 @@
+# 由 tauri-build 生成；不入仓
+gen/schemas
+
+# Rust 构建产物（项目根 .gitignore 已忽略 target/，此处冗余保护）
+target/

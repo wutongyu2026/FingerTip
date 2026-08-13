@@ -1,0 +1,61 @@
+[package]
+name = "fingertip"
+version = "0.4.1"
+description = "FingerTip — 后台记录键盘行为，次日产出 AI 音乐与数字画作"
+authors = ["singsky"]
+edition = "2021"
+rust-version = "1.77.2"
+
+# 与前端 package.json 的 identifier 对齐
+[lib]
+name = "fingertip_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+tauri-build = { version = "2.0", features = [] }
+
+[dependencies]
+tauri = { version = "2.1", features = ["tray-icon", "image-png", "protocol-asset"] }
+tauri-plugin-opener = "2.0"
+tauri-plugin-autostart = "2.0"
+tauri-plugin-dialog = "2.0"
+tauri-plugin-fs = "2.0"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+# Phase 1+ 才会用到，先装好：
+# rdev: 键盘 Hook
+# rusqlite: 本地 SQLite 存储
+# tokio: 异步运行时
+# anyhow / thiserror: 错误处理
+# keyring: 系统凭据（保存 AI Key）
+# chrono: 时间戳
+# uuid: 实体 ID
+rdev = "0.5"
+rusqlite = { version = "0.32", features = ["bundled"] }
+tokio = { version = "1", features = ["full"] }
+anyhow = "1.0"
+thiserror = "1.0"
+keyring = { version = "3.6", features = ["apple-native", "windows-native", "linux-native"] }
+chrono = { version = "0.4", features = ["serde"] }
+uuid = { version = "1.10", features = ["v4", "serde"] }
+parking_lot = "0.12"
+log = "0.4"
+env_logger = "0.11"
+async-trait = "0.1"
+# v0.3.4: Art 写 PNG 文件（轻量 PNG 编解码）
+png = "0.17"
+# v0.3.9: tmpfiles.org 上传（multipart）+ 二维码生成
+reqwest = { version = "0.12", default-features = false, features = ["multipart", "rustls-tls", "json"] }
+qrcode = { version = "0.14", features = ["image"] }
+image = "0.25"
+# v0.4: EngineClient 解析引擎返回的 base64 图片
+# v0.7: 海报渲染（imageproc + ab_glyph）
+imageproc = "0.25"
+ab_glyph = "0.2"
+base64 = "0.22"
+
+[dev-dependencies]
+tempfile = "3.13"
+mockall = "0.13"
+# v0.4: EngineClient 用 httpmock 起本地 mock 服务器测 HTTP 契约
+httpmock = "0.7"

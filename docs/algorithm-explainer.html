@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>FingerTip 算法说明 · 四指标 + 音乐/图像生成</title>
+<style>
+  :root {
+    --bg: #FAF7F2; --surface: #FFFFFF; --ink: #2B2723; --muted: #8A8378;
+    --accent: #D67B4F; --accent-soft: rgba(214,123,79,.12); --line: #E8E1D7;
+    --code-bg: #2B2723; --code-ink: #F5EFE6; --good: #4C8A5A;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
+         background: var(--bg); color: var(--ink); line-height: 1.7; padding: 40px 16px; }
+  .wrap { max-width: 860px; margin: 0 auto; }
+  header { margin-bottom: 32px; }
+  h1 { font-size: 26px; letter-spacing: .01em; }
+  header p { color: var(--muted); font-size: 13px; margin-top: 6px; }
+  h2 { font-size: 18px; margin: 36px 0 14px; padding-left: 10px; border-left: 4px solid var(--accent); }
+  h3 { font-size: 15px; margin: 18px 0 8px; color: var(--accent); }
+  .card { background: var(--surface); border: 1px solid var(--line); border-radius: 12px;
+          padding: 18px 20px; margin-bottom: 14px; box-shadow: 0 1px 4px rgba(0,0,0,.04); }
+  .grid4 { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 14px; }
+  .metric { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; }
+  .metric .name { font-size: 13px; color: var(--muted); font-weight: 600; }
+  .metric .formula { font-family: "SF Mono", Consolas, monospace; font-size: 13px; margin: 8px 0;
+                     background: var(--accent-soft); border-radius: 6px; padding: 6px 8px; }
+  .metric .rule { font-size: 12px; color: var(--muted); }
+  .metric .rule b { color: var(--good); }
+  code, .mono { font-family: "SF Mono", Consolas, monospace; }
+  pre { background: var(--code-bg); color: var(--code-ink); border-radius: 10px;
+        padding: 14px 16px; overflow-x: auto; font-size: 12.5px; line-height: 1.6; margin: 10px 0; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; margin: 8px 0; }
+  th, td { text-align: left; padding: 7px 10px; border-bottom: 1px solid var(--line); }
+  th { color: var(--muted); font-weight: 600; }
+  .tag { display: inline-block; font-size: 11px; border-radius: 999px; padding: 2px 10px;
+         background: var(--accent-soft); color: var(--accent); font-weight: 600; margin-right: 6px; }
+  .note { font-size: 12.5px; color: var(--muted); background: var(--accent-soft);
+          border-radius: 8px; padding: 10px 12px; margin-top: 10px; }
+  ul { padding-left: 20px; } li { margin: 4px 0; font-size: 13.5px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <h1>FingerTip 算法说明</h1>
+  <p>四个行为指标 + 音乐/图像本地生成算法 · 全部摘自真实代码（v0.3.10）</p>
+</header>
+
+<h2>一、四个行为指标（summary/aggregator.rs · compute_metrics）</h2>
+<p style="font-size:13.5px;color:var(--muted);margin-bottom:12px;">
+输入 = 当日按键事件流 <span class="mono">events</span> + 24 小时分桶 <span class="mono">hourly[24]</span>。所有除零一律返回 0。</p>
+
+<div class="grid4">
+  <div class="metric">
+    <div class="name">密集度 intensity</div>
+    <div class="formula">total_keys ÷ active_hours</div>
+    <div class="rule"><b>≥800 快</b> · 0&lt;x&lt;800 慢<br>active_hours = 有按键的小时数</div>
+  </div>
+  <div class="metric">
+    <div class="name">平稳度 steadiness</div>
+    <div class="formula">stddev(hourly) ÷ mean(hourly)</div>
+    <div class="rule"><b>≤0.8 平稳</b> · &gt;0.8 跳跃<br>变异系数；mean/std 按 24 桶（含空小时）</div>
+  </div>
+  <div class="metric">
+    <div class="name">流畅度 fluency</div>
+    <div class="formula">pauses(&gt;2s) ÷ (events−1)</div>
+    <div class="rule"><b>&lt;10% 流畅</b> · ≥10% 停顿<br>相邻键间隔&gt;2s 记一次停顿</div>
+  </div>
+  <div class="metric">
+    <div class="name">活跃度 activity</div>
+    <div class="formula">count(hourly[i] &gt; 0)</div>
+    <div class="rule"><b>&gt;4h 活跃</b> · ≤4h 不活跃<br>有按键的小时数</div>
+  </div>
+</div>
+
+<div class="card" style="margin-top:14px;">
+  <h3>平稳度细节（为何截图 4.80 = 跳跃）</h3>
+  <p style="font-size:13.5px;">截图里 <span class="mono">平稳度 4.80</span>：当天按键集中在 1 个小时，24 桶里 23 个为 0，
+  标准差远大于均值 → 变异系数 4.8 &gt; 0.8，判定「跳跃」。若 24 小时完全均匀，该值≈0（平稳）。</p>
+</div>
+
+<div class="card">
+  <h3>高峰按键（第 5 张卡）</h3>
+  <p style="font-size:13.5px;">= 当日 <b>单个最常按的键</b> 的次数（Top5[0].count）。截图 6 = 最忙的键按了 6 次。
+  注意它与 hero 的「峰值小时」不同：后者是按键最多的小时（<span class="mono">argmax hourly</span>）。</p>
+</div>
+
+<h2>二、音乐生成（generate/local/music.rs + db/wav_encoder.rs）</h2>
+<div class="card">
+  <span class="tag">mood → BPM</span><span class="tag">events → notes</span><span class="tag">events → 64 振幅</span><span class="tag">theme_word → 缩放</span>
+  <table>
+    <tr><th>步骤</th><th>算法</th></tr>
+    <tr><td>BPM</td><td>calm/tired/sad=75 · happy/excited=130 · energetic/focused=140 · angry=155 · 其它=100</td></tr>
+    <tr><td>时长</td><td>max(末键−首键, 8000ms)；无事件 = 16 拍</td></tr>
+    <tr><td>音符 notes</td><td>取前 64 个事件，velocity=80，start=该键时间−首键，dur=半拍</td></tr>
+    <tr><td>振幅 amplitudes</td><td>事件按时间分 64 桶 → 每桶计数÷最大计数 → ×theme_factor，clamp [0,1]</td></tr>
+    <tr><td>theme_factor</td><td>(theme_word 字节和 % 50)/100 + 0.75 ∈ [0.75,1.25]（同 mood 不同词波形不同）</td></tr>
+    <tr><td>WAV 渲染</td><td>单声道 16-bit 44.1kHz 正弦波；键码→MIDI→频率</td></tr>
+  </table>
+  <pre>freq = 440 × 2^((midi − 69) / 12)
+键码→MIDI: A-G→60/62/64/65/67/69/71  0-9→72-81  空格→72  其它→60
+振幅 = velocity/127 × 0.5</pre>
+  <div class="note">确定性算法：同一天的 events+mood+theme_word 永远产出同一首曲子，无随机数。</div>
+</div>
+
+<h2>三、图像生成（generate/local/art.rs）</h2>
+<div class="card">
+  <span class="tag">mood → 基础色相</span><span class="tag">theme_word → 色相+散布</span><span class="tag">events → 坐标种子</span>
+  <table>
+    <tr><th>步骤</th><th>算法</th></tr>
+    <tr><td>画布</td><td>256×256，固定 64 个像素块（每块前端画 4×4）</td></tr>
+    <tr><td>基础色相</td><td>happy/energetic=30(橙) · calm=120(绿) · sad=210(蓝) · angry=0(红) · focused=250(紫) · 其它=60</td></tr>
+    <tr><td>每像素色相</td><td>h = (基础色相 + theme_word[i%len] 的字节值) % 360，再 HSV(h,0.7,0.85)→RGB</td></tr>
+    <tr><td>坐标</td><td>seed = events[i%len].key_code + 字符值（无事件=i×7）<br>
+        x = (seed×31 + i×97) % 256 · y = (seed×17 + i×53) % 256</td></tr>
+  </table>
+  <div class="note">mood 定色调、theme_word 调色+移位、events 定散布 —— 三者任一变化，画面就不同。</div>
+</div>
+
+<h2>四、数据链路一句话</h2>
+<div class="card">
+  <p style="font-size:13.5px;">键盘 Hook → SQLite <span class="mono">key_events</span> → scheduler 每 60s 聚合 →
+  <span class="mono">daily_summary</span>（四指标+Top5+hourly）→ 前端 Today 渲染；生成时
+  <span class="mono">generate_now</span> 读 events 本地算 Music/Art → 写 WAV/PNG 到
+  <span class="mono">app_data_dir/downloads/{date}/</span> → Artworks 播放/下载/二维码分享。</p>
+</div>
+</div>
+</body>
+</html>
