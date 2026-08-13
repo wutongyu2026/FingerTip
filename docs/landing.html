@@ -320,7 +320,6 @@ if (d && d.p && d.w) {
       <div class="stat"><span>总按键</span><b>${fmtN(d.n)}</b></div>
       <div class="stat"><span>活跃</span><b>${actText}</b></div>
     </div>
-    ${d.u ? `<div class="funny-card"><span class="funny-label">AI 键盘诊断</span><p class="funny-text">${esc(d.u)}</p></div>` : ''}
     <div class="player">
       <button class="play-btn" id="playBtn" aria-label="播放今日音乐">▶</button>
       <div class="player-info">
@@ -329,6 +328,7 @@ if (d && d.p && d.w) {
       </div>
       <audio id="audio" src="${esc(d.w)}" preload="metadata"></audio>
     </div>
+    ${d.u ? `<div class="funny-card"><span class="funny-label">AI 键盘诊断</span><p class="funny-text">${esc(d.u)}</p></div>` : ''}
     <a class="cta" href="#" target="_blank" rel="noopener">也想生成我的今日作品 · 下载桌面版</a>
     <div class="note">手机可以听歌、看画。完整创作在 Windows 桌面版完成，数据只留本机。</div>
   `;
