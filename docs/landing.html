@@ -4,270 +4,92 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="theme-color" content="#0B0B10">
-<title>FingerTip · 我的键盘指纹</title>
-<meta property="og:title" content="FingerTip · 我的键盘指纹">
+<title>FingerTip · 今日键盘指纹</title>
+<meta property="og:title" content="FingerTip · 今日键盘指纹">
 <meta property="og:type" content="website">
-<meta property="og:description" content="后台记录键盘节奏，AI 生成每日专属音乐与数字画作。">
+<meta property="og:description" content="今日键盘节奏生成的音乐、画作与诊断。">
 <meta property="og:image" content="">
 <meta name="twitter:card" content="summary_large_image">
 <style>
-* { margin: 0; padding: 0; box-sizing: border-box; }
-:root {
-  --ink: #f7f3ea;
-  --muted: #a9a49a;
-  --accent: #ff8a5c;
-  --line: rgba(255,255,255,.12);
-}
-body {
-  font-family: "PingFang SC", "Noto Sans SC", -apple-system, sans-serif;
-  background: #0b0b10;
-  color: var(--ink);
-  min-height: 100vh;
-}
-.wrap { max-width: 620px; margin: 0 auto; padding: 18px 16px 40px; }
-.hero {
-  position: relative;
-  border-radius: 28px;
-  overflow: hidden;
-  box-shadow: 0 18px 60px rgba(0,0,0,.35);
-}
-.hero img {
-  width: 100%;
-  display: block;
-  aspect-ratio: 1 / 1;
-  object-fit: cover;
-}
-.hero-overlay {
-  position: absolute;
-  inset: auto 0 0 0;
-  padding: 26px 24px 22px;
-  background: linear-gradient(180deg, transparent 0%, rgba(8,8,12,.72) 45%, rgba(8,8,12,.96) 100%);
-}
-.brand {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 12px;
-  letter-spacing: .12em;
-  color: var(--muted);
-  background: rgba(255,255,255,.08);
-  border: 1px solid var(--line);
-  padding: 6px 12px;
-  border-radius: 999px;
-  backdrop-filter: blur(8px);
-}
-.date { font-size: 12px; color: var(--muted); margin-top: 12px; }
-.sentence {
-  font-family: "STSong", "Songti SC", "Noto Serif SC", serif;
-  font-size: 24px;
-  line-height: 1.7;
-  font-weight: 700;
-  margin-top: 8px;
-  text-shadow: 0 2px 12px rgba(0,0,0,.35);
-}
-.english {
-  font-family: Georgia, serif;
-  font-style: italic;
-  font-size: 13px;
-  color: rgba(255,255,255,.72);
-  margin-top: 8px;
-}
-.stats {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 8px;
-  margin-top: 14px;
-}
-.stat {
-  background: rgba(255,255,255,.08);
-  border: 1px solid var(--line);
-  border-radius: 16px;
-  padding: 10px 4px;
-  text-align: center;
-}
-.stat b { display: block; font-size: 16px; margin-top: 3px; }
-.stat span { font-size: 10px; color: var(--muted); letter-spacing: .05em; }
-.player {
-  position: sticky;
-  bottom: 12px;
-  margin-top: 16px;
-  background: rgba(22,22,28,.92);
-  border: 1px solid rgba(255,255,255,.14);
-  border-radius: 20px;
-  padding: 12px 14px;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  backdrop-filter: blur(16px);
-  box-shadow: 0 12px 36px rgba(0,0,0,.4);
-}
-.play-btn {
-  flex: 0 0 54px;
-  height: 54px;
-  border-radius: 50%;
-  border: none;
-  background: linear-gradient(135deg, #ff8a5c, #ff5f8f);
-  color: #0b0b10;
-  font-size: 20px;
-  cursor: pointer;
-  box-shadow: 0 6px 20px rgba(255,95,143,.35);
-}
-.player-info { min-width: 0; flex: 1; }
-.player-info b { display: block; font-size: 14px; }
-.player-info span {
-  display: block;
-  font-size: 11px;
-  color: var(--muted);
-  margin-top: 2px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-.cta {
-  display: block;
-  text-align: center;
-  margin-top: 18px;
-  background: #fff;
-  color: #0b0b10;
-  text-decoration: none;
-  font-weight: 700;
-  padding: 15px;
-  border-radius: 18px;
-  font-size: 15px;
-}
-/* v0.6.0: 双按钮容器（GitHub + 国内镜像） */
-.cta-row {
-  display: flex;
-  gap: 10px;
-  margin-top: 18px;
-  flex-wrap: wrap;
-}
-.cta-row--single .cta { flex: 1; }
-/* 国内镜像按钮 — 灰底橙字，区别于 GitHub 主按钮（白底） */
-.cta-cn {
-  background: rgba(255,255,255,.10);
-  color: var(--accent);
-  border: 1px solid rgba(255,138,92,.35);
-}
-.note {
-  margin-top: 14px;
-  font-size: 11px;
-  color: var(--muted);
-  line-height: 1.7;
-  text-align: center;
-}
-.default-hero {
-  border-radius: 28px;
-  padding: 64px 28px 40px;
-  text-align: center;
-  background:
-    radial-gradient(circle at 22% 24%, rgba(255,138,92,.45), transparent 34%),
-    radial-gradient(circle at 78% 34%, rgba(93,161,255,.4), transparent 38%),
-    radial-gradient(circle at 54% 78%, rgba(255,95,143,.3), transparent 42%),
-    #14141a;
-}
-.default-hero h1 { font-size: 30px; letter-spacing: .02em; margin-bottom: 10px; }
-.default-hero p { font-size: 13px; color: var(--muted); line-height: 1.8; max-width: 380px; margin: 0 auto; }
-.feature {
-  margin-top: 18px;
-  background: rgba(255,255,255,.06);
-  border: 1px solid var(--line);
-  border-radius: 18px;
-  padding: 16px 18px;
-  display: flex;
-  gap: 12px;
-}
-.feature-icon { font-size: 22px; }
-.feature h3 { font-size: 14px; margin-bottom: 4px; }
-.feature p { font-size: 12px; color: var(--muted); line-height: 1.6; }
-.diagnosis-card {
-  margin-top: 14px;
-  background: rgba(255,255,255,.08);
-  border: 1px solid rgba(255,255,255,.12);
-  border-radius: 14px;
-  padding: 14px 16px;
-  backdrop-filter: blur(10px);
-}
-.diagnosis-head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-  margin-bottom: 8px;
-}
-.diagnosis-label {
-  font-size: 12px;
-  font-weight: 700;
-  color: var(--ink);
-}
-.diagnosis-badge {
-  font-size: 10px;
-  color: var(--accent);
-  border: 1px solid rgba(255,138,92,.35);
-  background: rgba(255,138,92,.12);
-  padding: 3px 8px;
-  border-radius: 999px;
-}
-.diagnosis-text {
-  font-size: 13px;
-  line-height: 1.8;
-  color: rgba(255,255,255,.82);
-  margin: 0;
-}
-@media (max-width: 480px) {
-  .wrap { padding: 10px 10px 32px; }
-  .hero { border-radius: 22px; }
-  .hero-overlay { padding: 20px 16px 16px; }
-  .sentence { font-size: 20px; }
-  .stats { gap: 6px; }
-  .stat b { font-size: 14px; }
-  .player { bottom: 8px; border-radius: 18px; }
-  .cta { padding: 13px; }
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--ink:#f7f3ea;--muted:#a9a49a;--accent:#ff8a5c;--line:rgba(255,255,255,.12)}
+body{font-family:"PingFang SC","Noto Sans SC",-apple-system,sans-serif;background:#0b0b10;color:var(--ink);min-height:100vh}
+.wrap{max-width:720px;margin:0 auto;padding:18px 16px 40px}
+.hero{position:relative;border-radius:28px;overflow:hidden;box-shadow:0 18px 60px rgba(0,0,0,.35)}
+.hero img{width:100%;display:block;aspect-ratio:16/9;object-fit:cover}
+.hero-overlay{position:absolute;inset:auto 0 0 0;padding:28px 24px 22px;background:linear-gradient(180deg,transparent 0%,rgba(8,8,12,.72) 45%,rgba(8,8,12,.96) 100%)}
+.brand{display:inline-flex;align-items:center;gap:8px;font-size:12px;letter-spacing:.12em;color:var(--muted);background:rgba(255,255,255,.08);border:1px solid var(--line);padding:6px 12px;border-radius:999px;backdrop-filter:blur(8px)}
+.date{font-size:12px;color:var(--muted);margin-top:12px}
+.sentence{font-family:"STSong","Songti SC","Noto Serif SC",serif;font-size:26px;line-height:1.7;font-weight:700;margin-top:10px;text-shadow:0 2px 12px rgba(0,0,0,.35)}
+.english{font-family:Georgia,serif;font-style:italic;font-size:14px;color:rgba(255,255,255,.74);margin-top:8px;line-height:1.6;max-width:56ch}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:14px}
+.stat{background:rgba(255,255,255,.08);border:1px solid var(--line);border-radius:16px;padding:10px 4px;text-align:center}
+.stat b{display:block;font-size:17px;margin-top:4px}
+.stat span{font-size:10px;color:var(--muted);letter-spacing:.05em}
+.player{position:sticky;bottom:12px;margin-top:16px;background:rgba(22,22,28,.92);border:1px solid rgba(255,255,255,.14);border-radius:20px;padding:12px 14px;display:flex;align-items:center;gap:12px;backdrop-filter:blur(16px);box-shadow:0 12px 36px rgba(0,0,0,.4)}
+.play-btn{flex:0 0 54px;height:54px;border-radius:50%;border:none;background:linear-gradient(135deg,#ff8a5c,#ff5f8f);color:#0b0b10;font-size:20px;cursor:pointer;box-shadow:0 6px 20px rgba(255,95,143,.35)}
+.player-info{min-width:0;flex:1}
+.player-info b{display:block;font-size:14px}
+.player-info span{display:block;font-size:11px;color:var(--muted);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cta-row{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
+.cta{display:inline-flex;align-items:center;justify-content:center;text-align:center;min-height:48px;padding:0 16px;border-radius:18px;font-size:14px;font-weight:700;text-decoration:none}
+.cta-github{background:#fff;color:#0b0b10}
+.cta-cn{background:rgba(255,255,255,.10);color:var(--accent);border:1px solid rgba(255,138,92,.35)}
+.note{margin-top:14px;font-size:11px;color:var(--muted);line-height:1.7;text-align:center}
+.diagnosis-card{margin-top:14px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);border-radius:14px;padding:14px 16px;backdrop-filter:blur(10px)}
+.diagnosis-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px}
+.diagnosis-label{font-size:12px;font-weight:700;color:var(--ink)}
+.diagnosis-badge{font-size:10px;color:var(--accent);border:1px solid rgba(255,138,92,.35);background:rgba(255,138,92,.12);padding:3px 8px;border-radius:999px}
+.diagnosis-text{font-size:13px;line-height:1.8;color:rgba(255,255,255,.82);margin:0}
+.default-hero{border-radius:28px;padding:64px 28px 40px;text-align:center;background:radial-gradient(circle at 22% 24%, rgba(255,138,92,.45), transparent 34%),radial-gradient(circle at 78% 34%, rgba(93,161,255,.4), transparent 38%),radial-gradient(circle at 54% 78%, rgba(255,95,143,.3), transparent 42%),#14141a}
+.default-hero h1{font-size:30px;letter-spacing:.02em;margin-bottom:10px}
+.default-hero p{font-size:13px;color:var(--muted);line-height:1.8;max-width:380px;margin:0 auto}
+.feature{margin-top:18px;background:rgba(255,255,255,.06);border:1px solid var(--line);border-radius:18px;padding:16px 18px;display:flex;gap:12px}
+.feature-icon{font-size:22px}
+.feature h3{font-size:14px;margin-bottom:4px}
+.feature p{font-size:12px;color:var(--muted);line-height:1.6}
+@media (max-width:480px){
+  .wrap{padding:10px 10px 32px}
+  .hero{border-radius:22px}
+  .hero-overlay{padding:20px 16px 16px}
+  .sentence{font-size:21px}
+  .stats{gap:6px}
+  .stat b{font-size:14px}
+  .player{bottom:8px;border-radius:18px}
+  .cta{width:100%;min-height:46px}
 }
 </style>
 </head>
 <body>
-<div class="wrap">
-  <div id="card"></div>
-</div>
+<div class="wrap"><div id="card"></div></div>
 <script>
-function b64urlDecode(s) {
-  let base64 = s.replace(/-/g, '+').replace(/_/g, '/');
+function b64urlDecode(s){
+  let base64 = s.replace(/-/g,'+').replace(/_/g,'/');
   while (base64.length % 4 !== 0) base64 += '=';
   const bin = atob(base64);
-  const bytes = Uint8Array.from(bin, c => c.charCodeAt(0));
-  return new TextDecoder().decode(bytes);
+  return new TextDecoder().decode(Uint8Array.from(bin, c => c.charCodeAt(0)));
 }
-function getPayload() {
+function getPayload(){
   const m = location.hash.match(/[#&]d=([A-Za-z0-9_-]+)/);
   if (!m) return null;
   try { return JSON.parse(b64urlDecode(m[1])); } catch { return null; }
 }
-function esc(s) {
-  return String(s ?? '').replace(/[&<>"']/g, c => ({
-    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
-  }[c]));
+function esc(s){
+  return String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 }
-function fmtN(n) {
+function fmtN(n){
   n = Number(n) || 0;
   if (n >= 10000) return (n / 10000).toFixed(1) + '万';
   if (n >= 1000) return (n / 1000).toFixed(1) + 'K';
   return String(n);
 }
-function setDownloadLinks() {
-  // v0.6.0: 双按钮下载 —— d.l = GitHub 直链，d.c = 国内镜像
-  // 兼容旧 payload（无 l/c）：用 hostname 拼 GitHub URL fallback
+function setDownloadLinks(d){
   const host = location.hostname || '';
   const org = host.split('.')[0] || 'wutongyu2026';
   const pathMatch = location.pathname.match(/^\/([^/]+)/);
-  const firstPath = pathMatch && pathMatch[1] && !pathMatch[1].includes(':') ? pathMatch[1] : 'FingerTip';
-  const repo = firstPath || 'FingerTip';
+  const repo = pathMatch && pathMatch[1] && !pathMatch[1].includes(':') ? pathMatch[1] : 'FingerTip';
   const ghUrl = 'https://github.com/' + org + '/' + repo + '/releases/latest';
-
-  // 把每一个独立 .cta 替换为 .cta-row 容器（内含 GitHub + 可选国内镜像按钮）
-  // querySelectorAll 而非 querySelector：覆盖有 payload / 无 payload 两种静态页
   document.querySelectorAll('.cta').forEach((el) => {
-    // 已经被包过的容器跳过（防重复包装）
     if (el.classList.contains('cta-github') || el.classList.contains('cta-cn')) return;
     if (el.parentElement && el.parentElement.classList.contains('cta-row')) return;
     const wrap = document.createElement('div');
@@ -275,12 +97,9 @@ function setDownloadLinks() {
     el.replaceWith(wrap);
     wrap.appendChild(buildCtaGithub(d && d.l ? d.l : ghUrl));
     if (d && d.c) wrap.appendChild(buildCtaCn(d.c));
-    // 若只有 GitHub 链接，保持单按钮（向后兼容）
-    if (!d || !d.c) wrap.classList.add('cta-row--single');
   });
 }
-
-function buildCtaGithub(href) {
+function buildCtaGithub(href){
   const a = document.createElement('a');
   a.className = 'cta cta-github';
   a.href = href;
@@ -289,8 +108,7 @@ function buildCtaGithub(href) {
   a.textContent = 'GitHub 下载 · 桌面版';
   return a;
 }
-
-function buildCtaCn(href) {
+function buildCtaCn(href){
   const a = document.createElement('a');
   a.className = 'cta cta-cn';
   a.href = href;
@@ -311,27 +129,28 @@ if (d && d.p && d.w) {
   const actText = (Number(d.a) || 0) + 'h';
 
   document.title = 'FingerTip · ' + (d.d || '今日键盘指纹');
-  document.querySelector('meta[property="og:title"]').setAttribute('content', document.title);
-  document.querySelector('meta[property="og:description"]').setAttribute(
-    'content', d.s ? d.s : '我的今日 AI 音乐与数字画作'
-  );
-  document.querySelector('meta[property="og:image"]').setAttribute('content', d.p);
+  const ogTitle = document.querySelector('meta[property="og:title"]');
+  const ogDesc = document.querySelector('meta[property="og:description"]');
+  const ogImg = document.querySelector('meta[property="og:image"]');
+  if (ogTitle) ogTitle.setAttribute('content', document.title);
+  if (ogDesc) ogDesc.setAttribute('content', d.s ? d.s : '我的今日 AI 音乐与数字画作');
+  if (ogImg) ogImg.setAttribute('content', d.p);
 
   card.innerHTML = `
     <div class="hero">
       <img src="${esc(d.p)}" alt="今日 AI 画作">
       <div class="hero-overlay">
-        <span class="brand">FingerTip · 我的键盘指纹</span>
-        <div class="date">${dateText} · ${themeText}</div>
-        <p class="sentence">${esc(d.s || '今天，我的键盘有它自己的旋律。')}</p>
+        <span class="brand">FingerTip · 今日键盘指纹</span>
+        <div class="date">${dateText}${themeText ? ' · ' + themeText : ''}</div>
+        <p class="sentence">${esc(d.s || '今天的键盘节奏，已经被轻轻记下。')}</p>
         <p class="english">${esc(d.e || '')}</p>
+        <div class="stats">
+          <div class="stat"><span>最常用键</span><b>${esc(d.k || '—')}</b></div>
+          <div class="stat"><span>输入频率</span><b>${freqText}</b></div>
+          <div class="stat"><span>总按键</span><b>${fmtN(d.n)}</b></div>
+          <div class="stat"><span>活跃</span><b>${actText}</b></div>
+        </div>
       </div>
-    </div>
-    <div class="stats">
-      <div class="stat"><span>最常用键</span><b>${esc(d.k || '—')}</b></div>
-      <div class="stat"><span>输入频率</span><b>${freqText}</b></div>
-      <div class="stat"><span>总按键</span><b>${fmtN(d.n)}</b></div>
-      <div class="stat"><span>活跃</span><b>${actText}</b></div>
     </div>
     <div class="player">
       <button class="play-btn" id="playBtn" aria-label="播放今日音乐">▶</button>
@@ -342,7 +161,10 @@ if (d && d.p && d.w) {
       <audio id="audio" src="${esc(d.w)}" preload="metadata"></audio>
     </div>
     ${d.u ? `<div class="diagnosis-card"><div class="diagnosis-head"><span class="diagnosis-label">今日键盘诊断</span><span class="diagnosis-badge">AI</span></div><p class="diagnosis-text">${esc(d.u)}</p></div>` : ''}
-    <a class="cta" href="#" target="_blank" rel="noopener">也想生成我的今日作品 · 下载桌面版</a>
+    <div class="cta-row">
+      <a class="cta cta-github" href="${esc(d.l || 'https://github.com/wutongyu2026/FingerTip/releases/latest')}" target="_blank" rel="noopener">GitHub 下载 · 桌面版</a>
+      ${d.c ? `<a class="cta cta-cn" href="${esc(d.c)}" target="_blank" rel="noopener">国内镜像下载</a>` : ''}
+    </div>
     <div class="note">手机可以听歌、看画。完整创作在 Windows 桌面版完成，数据只留本机。</div>
   `;
 
@@ -386,11 +208,11 @@ if (d && d.p && d.w) {
       <span class="feature-icon">🛡️</span>
       <div><h3>隐私优先</h3><p>原始按键数据不出本机，AI 只接收抽象统计。</p></div>
     </div>
-    <a class="cta" href="#" target="_blank" rel="noopener">下载 FingerTip 桌面版</a>
+    <a class="cta" href="https://github.com/wutongyu2026/FingerTip/releases/latest" target="_blank" rel="noopener">下载 FingerTip 桌面版</a>
     <div class="note">Windows 10/11 · 免费 · 数据只留本机</div>
   `;
 }
-setDownloadLinks();
+setDownloadLinks(d);
 </script>
 </body>
 </html>
