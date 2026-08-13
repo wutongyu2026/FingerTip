@@ -38,8 +38,17 @@ import { version } from '../../package.json'
 </script>
 
 <style scoped>
+/* 横向布局：标题在左、版本徽章贴右下角（flex-end = 底部对齐） */
 .ft-about-header {
   align-items: flex-end;
+}
+/* v0.8.3 修复：窗口 ≤1100px（Tauri 默认窗口正好 1100）时 tokens.css 把
+   .ft-page-header 切到纵向堆叠，此时上面的 flex-end 变成「整块文字推到最右」——
+   用户反馈「关于/FingerTip/副标题为什么在最右面」。纵向模式恢复左对齐。 */
+@media (max-width: 1100px) {
+  .ft-about-header {
+    align-items: flex-start;
+  }
 }
 .ft-about-title {
   font-family: var(--font-hand);

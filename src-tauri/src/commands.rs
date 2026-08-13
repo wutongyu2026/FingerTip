@@ -910,7 +910,16 @@ pub async fn upload_and_generate_qr(
             wav_path,
             png_path,
             sentence: artifact_row.sentence.unwrap_or_default(),
-            english_sentence: english_sentence.unwrap_or_default(),
+            // v0.8.3: 英文优先用前端透传（刚重新生成的最新值），为空回退数据库。
+            // 修「app 重启后 generationResult 内存丢失 → 分享页英文消失」。
+            english_sentence: {
+                let from_front = english_sentence.unwrap_or_default();
+                if !from_front.trim().is_empty() {
+                    from_front
+                } else {
+                    artifact_row.english_sentence.clone().unwrap_or_default()
+                }
+            },
             theme_word,
             mood: mood_word,
             date,

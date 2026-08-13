@@ -1,7 +1,7 @@
 {
   "name": "fingertip",
   "private": true,
-  "version": "0.7.1",
+  "version": "0.8.3",
   "type": "module",
   "description": "FingerTip — 后台记录键盘行为，次日产出 AI 音乐 + 数字画作",
   "scripts": {

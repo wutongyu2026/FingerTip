@@ -2,6 +2,22 @@
 
 FingerTip 的版本变更日志。本文档遵循 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.1.0/) 规范。
 
+## [0.8.3] - 2026-08-13
+
+**三个体验修复**：点 × 直接退出进程 → 最小化到托盘；关于页标题块被推到窗口最右；分享卡片二维码太密太小扫不了。
+
+### Fixed
+
+- **点 × 最小化到托盘**：`on_window_event` 拦截 `CloseRequested` → `prevent_close` + `hide`，托盘 tooltip 提示「仍在后台运行 · 单击托盘图标恢复」；托盘「退出」菜单仍走 `app.exit(0)`（`ExitRequested` 不经过 `CloseRequested`），不受拦截
+- **关于页标题在最右面**：Tauri 默认窗口正好 1100px，触发 tokens.css `@media (max-width: 1100px)` 把 `.ft-page-header` 切纵向堆叠；About.vue 为横向布局写的 `align-items: flex-end` 在纵向下变成「整块文字右对齐」。补同断点媒体查询恢复左对齐（版本徽章跟到文字下方）
+- **二维码扫不了**：旧实现固定 120px + Lanczos 非整数缩放出糊边；且 qrcode image renderer 默认 8px/模块 + 自带 4 模块静区，被误当纯网格导致尺寸公式错误。改为模块 ≥3px 整数放大（黑白边界锐利）+ 规范 4 模块静区，尺寸随 payload 密度自适应（~800 字符分享链接 ≈ 300px 大码），句子/统计区按实际码宽让位
+- 海报输出唯一文件名（原固定 `fingertip-card.png`，并发渲染会互相覆盖）
+
+### Tests
+
+- 新增端到端「扫码」验证：真实长度分享链接渲染海报 → 按布局公式抠出 QR 区域 → rqrr 解码断言内容一致（等价于手机扫码成功）
+- 验收：cargo test --lib **223** 通过 / About 页 playwright 无 console error、1100px 下标题块回到 x=20 左对齐
+
 ## [0.8.2] - 2026-08-13
 
 **修「生成不出图片」—— 分享卡片前端读旧结构**：用户反馈"生成二维码和海报在哪？生成不出图片"。根因是 v0.7 后端 `upload_and_generate_qr` 已从 `{url, qr_png_base64}` 升级为 `{local_path, audio_ok, share_url}`（海报卡片 PNG 本地路径），但前端 Artworks.vue 还在读 `qr_png_base64` / `url`（undefined）→ 图裂、链接空。

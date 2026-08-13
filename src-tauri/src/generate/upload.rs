@@ -105,7 +105,6 @@ const SHADOW_DY: i32 = 18;          // 阴影垂直偏移
 const SHADOW_SIGMA: f32 = 22.0;     // 阴影模糊 σ
 const BLUR_PAD: i32 = 56;           // 为阴影预留的边距
 const PAD: i32 = 64;                // 卡片内水平边距
-const QR_SIZE: u32 = 120;           // v0.7.0: 200→120（低调不抢眼，扫码成功率仍够）
 
 // ═══════════════════════════════════════════════════════════
 // 字体发现
@@ -362,20 +361,46 @@ fn draw_centered(
     draw(img, font, text, x.max(0), y, scale, color)
 }
 
-/// 生成二维码 RgbaImage（干净白底，留白边，不搞圆角）
-fn make_qr(content: &str, size: u32) -> anyhow::Result<RgbaImage> {
-    use image::imageops;
+/// 生成二维码 RgbaImage（白底 + 规范 4 模块静区，模块整数像素放大）。
+///
+/// v0.8.3 用户反馈「二维码太小太密扫不了」——旧实现两大问题：
+///   1. 1px/模块 + Lanczos3 非整数缩放 → 模块糊边，黑白边界不锐利；
+///   2. 固定 120px → 长 payload（分享链接 ~800 字符 ≈ v20、97 模块）下每个模块不足 1.2px。
+///
+/// 新实现：
+///   1. 每个模块 ≥3px 整数放大（Nearest 精确复制像素，边界锐利）；
+///   2. 尺寸随内容密度自适应 —— payload 越长模块越多，图片自动变大，
+///      扫码成功率不再受固定尺寸上限挤压。
+fn make_qr(content: &str) -> anyhow::Result<RgbaImage> {
     use qrcode::QrCode;
 
     let code = QrCode::with_error_correction_level(content.as_bytes(), qrcode::EcLevel::L)?;
-    let rendered = code.render::<image::Luma<u8>>().build();
-    let pad = 6u32;
-    let qs = size.saturating_sub(pad * 2);
-    let scaled = imageops::resize(&rendered, qs, qs, imageops::FilterType::Lanczos3);
+    // 注意：qrcode 的 image renderer 默认 8px/模块 + 自带 4 模块静区，
+    // 必须显式关掉静区、设 1px/模块，才能拿到纯模块网格自己控制缩放与留白
+    let rendered = code
+        .render::<image::Luma<u8>>()
+        .quiet_zone(false)
+        .module_dimensions(1, 1)
+        .build();
+    let modules = code.width() as u32;
 
-    let mut qr = ImageBuffer::from_pixel(size, size, WHITE);
-    for (x, y, p) in scaled.enumerate_pixels() {
-        qr.put_pixel(x + pad, y + pad, Rgba([p.0[0], p.0[0], p.0[0], 255]));
+    const MODULE_PX: u32 = 3;   // 每个模块的最小像素数
+    const QUIET: u32 = 4;       // QR 规范要求的静区宽度（模块数）
+    let total = (modules + QUIET * 2) * MODULE_PX;
+    let offset = QUIET * MODULE_PX;
+
+    let mut qr = ImageBuffer::from_pixel(total, total, WHITE);
+    for y in 0..modules {
+        for x in 0..modules {
+            if rendered.get_pixel(x, y).0[0] > 127 { continue; } // 白模块跳过（底已白）
+            let px = offset + x * MODULE_PX;
+            let py = offset + y * MODULE_PX;
+            for dy in 0..MODULE_PX {
+                for dx in 0..MODULE_PX {
+                    qr.put_pixel(px + dx, py + dy, Rgba([0, 0, 0, 255]));
+                }
+            }
+        }
     }
     Ok(qr)
 }
@@ -821,9 +846,16 @@ pub fn generate_card_png(data: &SharePageData, qr_url: &str) -> anyhow::Result<P
     // ── v0.7.1: 上半「视觉焦点」= 大画作 + 主题词 + 句子（占满上半） ──
     // 画作已铺满全卡作背景（见 section 3）。文字层放在底部白色渐变覆层上。
 
+    // ── v0.8.3: QR 提前渲染 —— 实际尺寸随 payload 密度自适应，供下面句子/统计让位 ──
+    let qr_img = make_qr(qr_url)?;
+    let qr_w = qr_img.width() as i32;
+    let qr_h = qr_img.height() as i32;
+    let qr_gap = 32i32;
+
     // ── 句子（左侧，居上半视觉焦点 —— y=380 在画作下半区，halo 保证可读） ──
     let content_x = cx(PAD);
-    let content_w = (card_w_i - PAD * 2) as u32;
+    // v0.8.3: 大 QR 顶部会升到句子区，句子换行宽度给右下角 QR 让位，避免文字压码
+    let content_w = (card_w_i - PAD * 2 - qr_w - qr_gap) as u32;
     let mut sy = cy(380);
 
     let cn_wrapped = wrap(&data.sentence, content_w, s_cn_sentence);
@@ -861,8 +893,7 @@ pub fn generate_card_png(data: &SharePageData, qr_url: &str) -> anyhow::Result<P
 
     // 16:9 横向布局 —— 4 张 stat 卡等宽铺在底部左侧，QR 右侧
     // v0.7.4: 容器渐变反转（顶透明→底不透明），stats 移到 y=620 落入 ~55% 不透明区
-    let qr_w = QR_SIZE as i32;
-    let qr_gap = 32i32;
+    // v0.8.3: stat 区宽度按实际 QR 尺寸让位（qr_w / qr_gap 在句子区已定义）
     let stat_area_w = (card_w_i - PAD * 2 - qr_w - qr_gap) as u32;
     let stat_col_w = stat_area_w / 4;
     let stat_y = cy(620);
@@ -887,15 +918,14 @@ pub fn generate_card_png(data: &SharePageData, qr_url: &str) -> anyhow::Result<P
         }
     }
 
-    // ── v0.7.1: 8. QR 码（右侧，缩到 120px 低调不抢眼） ──
-    // v0.7.4: QR 下移到 y=595（容器下半部 ~44%-85% 不透明区，扫码识别稳定）
-    let qr_img = make_qr(qr_url, QR_SIZE)?;
+    // ── v0.8.3: 8. QR 码（右下角，右对齐贴底，尺寸随 payload 密度自适应） ──
+    // 底部对齐：卡片内 10px 边距 + 「扫码听音乐」标签一行（13px）+ 6px 间隔
     let qx = cx(card_w_i - PAD - qr_w);
-    let qy = cy(595);
+    let qy = cy(card_h_i - 10 - 13 - 6 - qr_h);
     canvas.copy_from(&qr_img, qx as u32, qy as u32)?;
 
-    let qr_label_y = qy + QR_SIZE as i32 + 6;
-    let qr_center_x = qx + QR_SIZE as i32 / 2;
+    let qr_label_y = qy + qr_h + 6;
+    let qr_center_x = qx + qr_w / 2;
     // QR 标签在底部右侧（梯度区），加 halo 保证在彩色画作上可读
     let qr_label_w = measure("\u{626B}\u{7801}\u{542C}\u{97F3}\u{4E50}", s_qr_label);
     let qr_label_x = qr_center_x - qr_label_w / 2;
@@ -920,7 +950,12 @@ pub fn generate_card_png(data: &SharePageData, qr_url: &str) -> anyhow::Result<P
     draw_with_shadow(&mut canvas, &cn_sans, &footer, fx.max(card_x + PAD), footer_y, s_footer, TEXT_SEC);
 
     // ── 10. 输出 ──
-    let out = std::env::temp_dir().join("fingertip-card.png");
+    // v0.8.3: 唯一文件名 —— 之前固定 fingertip-card.png，并发渲染/测试会互相覆盖
+    let nanos = std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .map(|d| d.as_nanos())
+        .unwrap_or(0);
+    let out = std::env::temp_dir().join(format!("fingertip-card-{nanos}.png"));
     canvas.save(&out)?;
     Ok(out)
 }
@@ -989,8 +1024,13 @@ mod tests {
 
     #[test]
     fn make_qr_works() {
-        let img = make_qr("FingerTip|2026-08-09|rain", 100).unwrap();
-        assert_eq!(img.dimensions(), (100, 100));
+        let content = "FingerTip|2026-08-09|rain";
+        let img = make_qr(content).unwrap();
+        // 尺寸 =（模块数 + 静区 4×2）× 3px/模块，正方形
+        let modules = qrcode::QrCode::with_error_correction_level(content.as_bytes(), qrcode::EcLevel::L)
+            .unwrap()
+            .width() as u32;
+        assert_eq!(img.dimensions(), ((modules + 8) * 3, (modules + 8) * 3));
     }
 
     #[test]
@@ -1024,9 +1064,10 @@ mod tests {
         assert_eq!(v["w"], "https://x/music.wav");
         assert_eq!(v["p"], "https://x/art.png");
         assert_eq!(v["s"], "今天键盘很有节奏，每一次敲击都像在给这一天写下一句悄悄话，安静又完整。");
-        // 长 payload 必须能生成高纠错二维码（分享页扫码可靠性）
-        let img = make_qr(&url, 320).unwrap();
-        assert_eq!(img.dimensions(), (320, 320));
+        // 长 payload 必须能生成足够大的二维码（分享页扫码可靠性）——
+        // v0.8.3: 尺寸随密度自适应，不再固定 320px，但长链接必须 > 200px 才可扫
+        let img = make_qr(&url).unwrap();
+        assert!(img.width() > 200, "长 payload 的二维码太小：{}px", img.width());
     }
 
     /// v0.7.1: 真实渲染 1280×720 海报 PNG（双重组件布局验证）。
@@ -1096,5 +1137,62 @@ mod tests {
         let dest = std::path::PathBuf::from(r"C:\Users\singsky\AppData\Local\Temp\fingertip-poster-test.png");
         std::fs::copy(&path, &dest).ok();
         eprintln!("[测试海报] 已生成：{} ({}x{} = {}KB)", dest.display(), w, h, bytes.len() / 1024);
+    }
+
+    /// v0.8.3: 端到端「扫码」验证 —— 用真实长度的分享链接渲染海报，
+    /// 按布局公式抠出右下角 QR 区域，用 rqrr 解码并断言内容一致。
+    /// 等价于拿手机扫一下必须能扫出来（此前用户反馈扫不了）。
+    #[test]
+    fn poster_qr_is_scannable() {
+        use image::imageops;
+
+        // 1) 造一张 256×256 纯色 PNG 作画作
+        let art_dir = tempfile::TempDir::new().unwrap();
+        let art_path = art_dir.path().join("art.png");
+        let art_img = ImageBuffer::from_pixel(256u32, 256u32, Rgba([214u8, 123, 79, 255]));
+        art_img.save(&art_path).unwrap();
+
+        // 2) 真实长度的分享链接（~800 字符 → 高版本 QR，正是「扫不了」的场景）
+        let data = SharePageData {
+            wav_path: PathBuf::from("/tmp/music.wav"),
+            png_path: art_path,
+            sentence: "今天键盘很有节奏，每一次敲击都像在给这一天写下一句悄悄话，安静又完整。".into(),
+            english_sentence: "Every keystroke today felt like writing a quiet line of the day, soft, steady and complete. A rhythm only my keyboard knows.".into(),
+            theme_word: "FLOW".into(),
+            mood: Some("开心".into()),
+            date: "2026-08-13".into(),
+            top1_key: "S".into(),
+            frequency_per_min: 42.0,
+            total_keys: 1234,
+            activity_hours: 6,
+            hourly: [0; 24],
+            time_range_label: "09:00-15:00".into(),
+            download_url: String::new(),
+            funny_summary: "今天键盘敲了1234下，S键独领风骚——编辑还是摸鱼？键盘自己都说不清。".into(),
+        };
+        let url = build_share_url(
+            &data,
+            "https://tmpfile.link/download/AbCdEf123456",
+            "https://tmpfile.link/download/XyZ987654321",
+        );
+        assert!(url.len() > 500, "测试链接不够长（{} 字符），覆盖不到真实场景", url.len());
+
+        // 3) 渲染海报 + 按与 generate_card_png 相同的公式抠出 QR 区域
+        let path = generate_card_png(&data, &url).unwrap();
+        let card = image::open(&path).unwrap();
+        let qr_img = make_qr(&url).unwrap();
+        let qr_w = qr_img.width();
+        let qr_h = qr_img.height();
+        let qx = (BLUR_PAD + CARD_W as i32 - PAD - qr_w as i32) as u32;   // cx(card_w - PAD - qr_w)
+        let qy = (BLUR_PAD + CARD_H as i32 - 10 - 13 - 6 - qr_h as i32) as u32; // cy(720 - 29 - qr_h)
+        let crop = imageops::crop_imm(&card, qx, qy, qr_w, qr_h).to_image();
+        let gray = image::DynamicImage::from(crop).to_luma8();
+
+        // 4) rqrr 解码 = 真实扫码
+        let mut prepared = rqrr::PreparedImage::prepare(gray);
+        let grids = prepared.detect_grids();
+        assert_eq!(grids.len(), 1, "海报上应恰好检测到 1 个二维码");
+        let (_, content) = grids[0].decode().expect("二维码应能解码（等价于扫码成功）");
+        assert_eq!(content, url, "解码出的内容应与分享链接一致");
     }
 }

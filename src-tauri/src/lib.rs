@@ -173,6 +173,19 @@ pub fn run() {
                 std::mem::forget(writer);
                 Ok(())
             })
+        // v0.8.3: 点 × 最小化到托盘而不是退出进程 —— 后台键盘记录不中断。
+        // 注意：托盘「退出」走 app.exit(0)（RunEvent::ExitRequested），
+        // 不经过 CloseRequested，不会被这里的 prevent_close 拦截。
+        .on_window_event(|window, event| {
+            if let tauri::WindowEvent::CloseRequested { api, .. } = event {
+                api.prevent_close();
+                let _ = window.hide();
+                // 悬停托盘图标时提示仍在后台，避免用户以为程序已退出
+                if let Some(tray) = window.app_handle().tray_by_id("main-tray") {
+                    let _ = tray.set_tooltip(Some("FingerTip 仍在后台运行 · 单击托盘图标恢复窗口"));
+                }
+            }
+        })
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

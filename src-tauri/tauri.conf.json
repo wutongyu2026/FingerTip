@@ -1,7 +1,7 @@
 {
   "$schema": "https://schema.tauri.app/config/2.0.0",
   "productName": "FingerTip",
-  "version": "0.7.1",
+  "version": "0.8.3",
   "identifier": "com.fingertip.app",
   "build": {
     "beforeDevCommand": "pnpm dev",
