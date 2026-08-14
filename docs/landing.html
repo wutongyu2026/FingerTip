@@ -77,6 +77,8 @@ function getPayload(){
 function esc(s){
   return String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 }
+// 国内镜像兜底：二维码 payload 未携带 c 字段时使用（Gitee 发行版附件直链）
+const CN_MIRROR_URL = 'https://gitee.com/nanyou711/finger-tip/releases/download/0.83/FingerTip_0.8.3_x64.zip';
 function fmtN(n){
   n = Number(n) || 0;
   if (n >= 10000) return (n / 10000).toFixed(1) + '万';
@@ -96,7 +98,7 @@ function setDownloadLinks(d){
     wrap.className = 'cta-row';
     el.replaceWith(wrap);
     wrap.appendChild(buildCtaGithub(d && d.l ? d.l : ghUrl));
-    if (d && d.c) wrap.appendChild(buildCtaCn(d.c));
+    wrap.appendChild(buildCtaCn(d && d.c ? d.c : CN_MIRROR_URL));
   });
 }
 function buildCtaGithub(href){
@@ -163,7 +165,7 @@ if (d && d.p && d.w) {
     ${d.u ? `<div class="diagnosis-card"><div class="diagnosis-head"><span class="diagnosis-label">今日键盘诊断</span><span class="diagnosis-badge">AI</span></div><p class="diagnosis-text">${esc(d.u)}</p></div>` : ''}
     <div class="cta-row">
       <a class="cta cta-github" href="${esc(d.l || 'https://github.com/wutongyu2026/FingerTip/releases/latest')}" target="_blank" rel="noopener">GitHub 下载 · 桌面版</a>
-      ${d.c ? `<a class="cta cta-cn" href="${esc(d.c)}" target="_blank" rel="noopener">国内镜像下载</a>` : ''}
+      <a class="cta cta-cn" href="${esc(d && d.c ? d.c : CN_MIRROR_URL)}" target="_blank" rel="noopener">国内镜像下载</a>
     </div>
     <div class="note">手机可以听歌、看画。完整创作在 Windows 桌面版完成，数据只留本机。</div>
   `;
